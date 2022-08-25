@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+# When we create a new repository for the first time,
+# we need to make sure that it has its own Vault token used in the GitHub actions
+# to access any secrets that need to be inserted at runtime
+
+# Create policy file
+tee ci-policy.hcl <<EOF
+# Read-only to CI secrets
+path "ci/${REPOSITORY_NAME}" {
+  capabilities = [ "read" ]
+}
+EOF
+
+# Write policy
+vault policy write ci-"${REPOSITORY_NAME}" ci-policy.hcl
+
+# Create token and associate with policy
+CI_TOKEN=$(vault token create -policy="ci-${REPOSITORY_NAME}" -field=token)
+
+# Test that it works
+VAULT_ADDR='https://vault.todanni.com' VAULT_TOKEN=$CI_TOKEN vault kv get -format yaml -field data  ci/"${REPOSITORY_NAME}"
+
+# TODO: Get the repository ID to use in the write secret request
+
+# TODO: Encrypt the token
+ENCRYPTED_TOKEN=CI_TOKEN
+
+# Write the secret to GitHub organisation secrets
+curl \
+  -X PUT \
+  -H "Accept: application/vnd.github+json" \
+  -H "Authorization: token ${GITHUB_TOKEN}" \
+  https://api.github.com/orgs/todanni/actions/secrets/VAULT_${REPOSITORY_NAME}_TOKEN\
+  -d '{"encrypted_value":"${ENCRYPTED_TOKEN}","visibility":"selected","selected_repository_ids":[${REPOSITORY_ID}]}'
+
+# Generate go.mod file
+go mod init "github.com/todanni/${REPOSITORY_NAME}"
+
+# Commit and push the created files
+git commit -am "Initialise go.mod"
+git push
