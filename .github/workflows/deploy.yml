@@ -1,9 +1,8 @@
 name: Template - build and deploy a Go service to production
 
 on:
-# To enable deployments, uncomment the following two lines
-#  push:
-#    branches: [ main ]
+  release:
+    types: [ published ]
 
 jobs:
   build:

@@ -5,12 +5,13 @@ import (
 	"os"
 
 	"github.com/gorilla/mux"
+	"github.com/openshift/osin"
 	log "github.com/sirupsen/logrus"
-	"github.com/todanni/template-repository/internal/config"
-	"github.com/todanni/template-repository/internal/database"
-	"github.com/todanni/template-repository/internal/repository"
-	"github.com/todanni/template-repository/internal/server"
-	"github.com/todanni/template-repository/pkg/template"
+
+	"github.com/todanni/auth/config"
+	"github.com/todanni/auth/database"
+	"github.com/todanni/auth/service/auth"
+	"github.com/todanni/auth/storage"
 )
 
 func main() {
@@ -28,17 +29,17 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Perform any migrations needed to run the service
-	err = db.AutoMigrate(&template.Template{})
-	if err != nil {
-		log.Error(err)
-	}
-
 	// Initialise router
 	r := mux.NewRouter()
 
-	// Create servers by passing DB connection and router
-	server.NewTemplateService(repository.NewRepository(db), r)
+	osinServer := osin.NewServer(&osin.ServerConfig{
+		AllowedAuthorizeTypes:     osin.AllowedAuthorizeType{osin.CODE, osin.TOKEN},
+		AllowedAccessTypes:        osin.AllowedAccessType{osin.AUTHORIZATION_CODE, osin.REFRESH_TOKEN},
+		AllowGetAccessRequest:     true,
+		AllowClientSecretInParams: true,
+	}, storage.New(db))
+
+	auth.NewAuthService(osinServer, r)
 
 	// Start the servers and listen
 	log.Fatal(http.ListenAndServe(":8083", r))
