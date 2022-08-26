@@ -1,10 +1,12 @@
 package auth
 
+import "net/http"
+
 const (
-	LoginHandler        = "/login"
+	LoginHandler        = "/auth/login"
 	CallbackHandler     = "/auth/callback"
-	PublicKeyHandler    = "/public-key"
-	RefreshTokenHandler = "/refresh"
+	PublicKeyHandler    = "/auth/public-key"
+	RefreshTokenHandler = "/auth/refresh"
 )
 
 func (s *authService) routes() {
@@ -12,4 +14,5 @@ func (s *authService) routes() {
 	s.router.HandleFunc(LoginHandler, s.LoginHandler)
 	s.router.HandleFunc(CallbackHandler, s.CallbackHandler)
 	s.router.HandleFunc(RefreshTokenHandler, s.RefreshTokenHandler)
+	s.router.HandleFunc(PublicKeyHandler, s.ServePublicKey).Methods(http.MethodGet)
 }

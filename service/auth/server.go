@@ -2,9 +2,11 @@ package auth
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/lestrrat-go/jwx/jwk"
 	"github.com/openshift/osin"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
@@ -107,4 +109,17 @@ func (s *authService) RefreshTokenHandler(w http.ResponseWriter, r *http.Request
 		HttpOnly: true,
 		SameSite: 2,
 	})
+}
+
+func (s *authService) ServePublicKey(w http.ResponseWriter, r *http.Request) {
+	keyset := jwk.NewSet()
+	keyset.Add(s.config.PublicJWK)
+
+	buf, err := json.Marshal(keyset)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, "Failed to marshal key", http.StatusInternalServerError)
+	}
+	w.Header().Add("Content-Type", "application/json")
+	_, err = w.Write(buf)
 }

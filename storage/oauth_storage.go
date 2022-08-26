@@ -34,7 +34,7 @@ func (s OAuthStorage) Close() {
 func (s OAuthStorage) GetClient(id string) (osin.Client, error) {
 	var c osin.DefaultClient
 
-	row := s.db.QueryRow("SELECT id, secret, redirect_uri, extra FROM client WHERE id=$1", id)
+	row := s.db.QueryRow("SELECT id, secret, redirect_uri FROM client WHERE id=$1", id)
 
 	err := row.Scan(&c.Id, &c.Secret, &c.RedirectUri)
 	// TODO: check if no rows and return appropriate error
