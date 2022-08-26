@@ -65,9 +65,21 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "invalid Google token", http.StatusBadRequest)
 	}
-	// TODO: Check if user exists
 
-	// TODO: translate google token to ToDanni token
+	// Check if user exists
+	result, err := s.storage.GetUser(email)
+	if err != nil {
+		http.Error(w, "some error with user", http.StatusInternalServerError)
+	}
+
+	// User doesn't exist, we have to create it
+	if result.ID == 0 {
+		result, err = s.storage.CreateUser(email, "google")
+		if err != nil {
+			http.Error(w, "couldn't create new user", http.StatusInternalServerError)
+		}
+	}
+
 	accessToken, err := token.IssueToDanniToken(email, s.config.PrivateJWK)
 	if err != nil {
 		http.Error(w, "couldn't create the ToDanni token", http.StatusInternalServerError)
@@ -83,7 +95,7 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 		SameSite: 2,
 	})
 
-	refreshToken, err := token.IssueToDanniRefreshToken(1)
+	refreshToken, err := token.IssueToDanniRefreshToken(int(result.ID))
 	http.SetCookie(w, &http.Cookie{
 		Name:     RefreshTokenCookieName,
 		Value:    refreshToken.Value,

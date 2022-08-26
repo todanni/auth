@@ -16,11 +16,13 @@ func NewUserStorage(db *gorm.DB) UserStorage {
 	}
 }
 
-func (storage *UserStorage) CreateUser(email, loginType string) {
-	storage.db.Create(models.User{
+func (storage *UserStorage) CreateUser(email, loginType string) (models.User, error) {
+	user := models.User{
 		Email:     email,
 		LoginType: loginType,
-	})
+	}
+	result := storage.db.Create(&user)
+	return user, result.Error
 }
 
 func (storage *UserStorage) GetUser(email string) (models.User, error) {
