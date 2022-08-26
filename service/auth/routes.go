@@ -1,12 +1,15 @@
 package auth
 
 const (
-	AuthoriseHandler = "/authorize"
-	TokenHandler     = "/token"
+	LoginHandler        = "/login"
+	CallbackHandler     = "/auth/callback"
+	PublicKeyHandler    = "/public-key"
+	RefreshTokenHandler = "/refresh"
 )
 
 func (s *authService) routes() {
 	// GET an auth
-	s.router.HandleFunc(TokenHandler, s.TokenHandler)
-	s.router.HandleFunc(AuthoriseHandler, s.AuthoriseHandler)
+	s.router.HandleFunc(LoginHandler, s.LoginHandler)
+	s.router.HandleFunc(CallbackHandler, s.CallbackHandler)
+	s.router.HandleFunc(RefreshTokenHandler, s.RefreshTokenHandler)
 }

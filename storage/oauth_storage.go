@@ -9,29 +9,29 @@ import (
 	"github.com/openshift/osin"
 )
 
-type Storage struct {
+type OAuthStorage struct {
 	db *sql.DB
 }
 
 // New returns a new postgres storage instance.
-func New(db *sql.DB) *Storage {
-	return &Storage{db}
+func New(db *sql.DB) *OAuthStorage {
+	return &OAuthStorage{db}
 }
 
 // Clone the storage if needed. For example, using mgo, you can clone the session with session.Clone
 // to avoid concurrent access problems.
 // This is to avoid cloning the connection at each method access.
 // Can return itself if not a problem.
-func (s *Storage) Clone() osin.Storage {
+func (s OAuthStorage) Clone() osin.Storage {
 	return s
 }
 
 // Close the resources the Storage potentially holds (using Clone for example)
-func (s *Storage) Close() {
+func (s OAuthStorage) Close() {
 }
 
 // GetClient loads the client by id
-func (s *Storage) GetClient(id string) (osin.Client, error) {
+func (s OAuthStorage) GetClient(id string) (osin.Client, error) {
 	var c osin.DefaultClient
 
 	row := s.db.QueryRow("SELECT id, secret, redirect_uri, extra FROM client WHERE id=$1", id)
@@ -46,13 +46,13 @@ func (s *Storage) GetClient(id string) (osin.Client, error) {
 }
 
 // UpdateClient updates the client (identified by its id) and replaces the values with the values of client.
-func (s *Storage) UpdateClient(c osin.Client) error {
+func (s OAuthStorage) UpdateClient(c osin.Client) error {
 	// TODO: updating won't be supported immediately
 	return nil
 }
 
 // CreateClient stores the client in the database and returns an error, if something went wrong.
-func (s *Storage) CreateClient(c osin.Client) error {
+func (s OAuthStorage) CreateClient(c osin.Client) error {
 	// TODO: User data isn't populated, check where it's needed
 	_, err := s.db.Exec("INSERT INTO client (id, secret, redirect_uri) VALUES ($1, $2, $3)",
 		c.GetId(), c.GetSecret(), c.GetRedirectUri())
@@ -61,7 +61,7 @@ func (s *Storage) CreateClient(c osin.Client) error {
 }
 
 // RemoveClient removes a client (identified by id) from the database. Returns an error if something went wrong.
-func (s *Storage) RemoveClient(id string) (err error) {
+func (s OAuthStorage) RemoveClient(id string) (err error) {
 	if _, err = s.db.Exec("DELETE FROM client WHERE id=$1", id); err != nil {
 		return errors.New(err.Error())
 	}
@@ -69,7 +69,7 @@ func (s *Storage) RemoveClient(id string) (err error) {
 }
 
 // SaveAuthorize saves authorize data.
-func (s *Storage) SaveAuthorize(data *osin.AuthorizeData) (err error) {
+func (s OAuthStorage) SaveAuthorize(data *osin.AuthorizeData) (err error) {
 	if _, err = s.db.Exec(
 		"INSERT INTO authorize (client, code, expires_in, scope, redirect_uri, state, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7)",
 		data.Client.GetId(),
@@ -88,7 +88,7 @@ func (s *Storage) SaveAuthorize(data *osin.AuthorizeData) (err error) {
 // LoadAuthorize looks up AuthorizeData by a code.
 // Client information MUST be loaded together.
 // Optionally can return error if expired.
-func (s *Storage) LoadAuthorize(code string) (*osin.AuthorizeData, error) {
+func (s OAuthStorage) LoadAuthorize(code string) (*osin.AuthorizeData, error) {
 	var data osin.AuthorizeData
 	var cid string
 	if err := s.db.QueryRow("SELECT client, code, expires_in, scope, redirect_uri, state, created_at FROM authorize WHERE code=$1 LIMIT 1", code).Scan(&cid, &data.Code, &data.ExpiresIn, &data.Scope, &data.RedirectUri, &data.State, &data.CreatedAt); err == sql.ErrNoRows {
@@ -111,7 +111,7 @@ func (s *Storage) LoadAuthorize(code string) (*osin.AuthorizeData, error) {
 }
 
 // RemoveAuthorize revokes or deletes the authorization code.
-func (s *Storage) RemoveAuthorize(code string) (err error) {
+func (s OAuthStorage) RemoveAuthorize(code string) (err error) {
 	if _, err = s.db.Exec("DELETE FROM authorize WHERE code=$1", code); err != nil {
 		return errors.New(err.Error())
 	}
@@ -120,7 +120,7 @@ func (s *Storage) RemoveAuthorize(code string) (err error) {
 
 // SaveAccess writes AccessData.
 // If RefreshToken is not blank, it must save in a way that can be loaded using LoadRefresh.
-func (s *Storage) SaveAccess(data *osin.AccessData) (err error) {
+func (s OAuthStorage) SaveAccess(data *osin.AccessData) (err error) {
 
 	return nil
 }
@@ -128,19 +128,19 @@ func (s *Storage) SaveAccess(data *osin.AccessData) (err error) {
 // LoadAccess retrieves access data by token. Client information MUST be loaded together.
 // AuthorizeData and AccessData DON'T NEED to be loaded if not easily available.
 // Optionally can return error if expired.
-func (s *Storage) LoadAccess(code string) (*osin.AccessData, error) {
+func (s OAuthStorage) LoadAccess(code string) (*osin.AccessData, error) {
 	return nil, nil
 }
 
 // RemoveAccess revokes or deletes an AccessData.
-func (s *Storage) RemoveAccess(code string) (err error) {
+func (s OAuthStorage) RemoveAccess(code string) (err error) {
 	return nil
 }
 
 // LoadRefresh retrieves refresh AccessData. Client information MUST be loaded together.
 // AuthorizeData and AccessData DON'T NEED to be loaded if not easily available.
 // Optionally can return error if expired.
-func (s *Storage) LoadRefresh(code string) (*osin.AccessData, error) {
+func (s OAuthStorage) LoadRefresh(code string) (*osin.AccessData, error) {
 	row := s.db.QueryRow("SELECT access FROM refresh WHERE token=$1 LIMIT 1", code)
 	var access string
 	if err := row.Scan(&access); err == sql.ErrNoRows {
@@ -152,7 +152,7 @@ func (s *Storage) LoadRefresh(code string) (*osin.AccessData, error) {
 }
 
 // RemoveRefresh revokes or deletes refresh AccessData.
-func (s *Storage) RemoveRefresh(code string) error {
+func (s OAuthStorage) RemoveRefresh(code string) error {
 	_, err := s.db.Exec("DELETE FROM refresh WHERE token=$1", code)
 	if err != nil {
 		return errors.New(err.Error())

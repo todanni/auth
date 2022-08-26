@@ -19,7 +19,7 @@
   </a>
 
   <p align="center">
-    This is the base template repository used for all the Golang ToDanni services.
+    This is the Authentication and Authorisation service for ToDanni, acting as an auth provider. 
     <br />
     <a href="https://github.com/danni-popova/toDanni"><strong>Explore the docs »</strong></a>
     <br />
