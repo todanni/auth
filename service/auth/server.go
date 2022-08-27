@@ -56,8 +56,6 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 
 	code := r.URL.Query().Get("code")
-	log.Info(code)
-
 	log.Info(s.oauthConfig)
 
 	tok, err := s.oauthConfig.Exchange(ctx, code)
