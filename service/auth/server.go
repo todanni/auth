@@ -103,16 +103,18 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	// Set access and refresh token cookies
 	http.SetCookie(w, &http.Cookie{
-		Name:  AccessTokenCookieName,
-		Value: accessToken,
-		Path:  "/",
+		Name:     AccessTokenCookieName,
+		Value:    accessToken,
+		Path:     "/",
+		HttpOnly: true,
 	})
 	refreshToken, err := token.IssueToDanniRefreshToken(int(result.ID))
 	// TODO: Save the token in the DB
 	http.SetCookie(w, &http.Cookie{
-		Name:  RefreshTokenCookieName,
-		Value: refreshToken.Value,
-		Path:  "/",
+		Name:     RefreshTokenCookieName,
+		Value:    refreshToken.Value,
+		Path:     "/",
+		HttpOnly: true,
 	})
 	http.Redirect(w, r, "https://todanni.com/", http.StatusFound)
 }
