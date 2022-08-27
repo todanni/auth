@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/oauth2/google"
+	scopes "google.golang.org/api/oauth2/v2"
 
 	"github.com/todanni/auth/config"
 	"github.com/todanni/auth/database"
@@ -47,7 +48,7 @@ func main() {
 	googleCredentials := os.Getenv("GOOGLE_CREDENTIALS")
 	decodedCredentials, err := b64.StdEncoding.DecodeString(googleCredentials)
 
-	oauthConfig, err := google.ConfigFromJSON(decodedCredentials)
+	oauthConfig, err := google.ConfigFromJSON(decodedCredentials, scopes.OpenIDScope, scopes.UserinfoEmailScope, scopes.UserinfoProfileScope)
 	if err != nil {
 		log.Fatalf("Unable to parse client secret file to oauthConfig: %v", err)
 	}

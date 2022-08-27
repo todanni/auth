@@ -60,7 +60,8 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 
 	tok, err := s.oauthConfig.Exchange(ctx, code)
 	if err != nil {
-		log.Fatalf("Unable to retrieve token from web: %v", err)
+		http.Error(w, "couldn't exchange token for code", http.StatusInternalServerError)
+		return
 	}
 
 	idToken := tok.Extra("id_token").(string)
@@ -68,12 +69,14 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 	email, err := token.ValidateGoogleToken(ctx, idToken)
 	if err != nil {
 		http.Error(w, "invalid Google token", http.StatusBadRequest)
+		return
 	}
 
 	// Check if user exists
 	result, err := s.storage.GetUser(email)
 	if err != nil {
 		http.Error(w, "some error with user", http.StatusInternalServerError)
+		return
 	}
 
 	// User doesn't exist, we have to create it
@@ -81,12 +84,14 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 		result, err = s.storage.CreateUser(email, "google")
 		if err != nil {
 			http.Error(w, "couldn't create new user", http.StatusInternalServerError)
+			return
 		}
 	}
 
 	accessToken, err := token.IssueToDanniToken(email, s.config.PrivateJWK)
 	if err != nil {
 		http.Error(w, "couldn't create the ToDanni token", http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -135,6 +140,7 @@ func (s *authService) ServePublicKey(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error(err)
 		http.Error(w, "Failed to marshal key", http.StatusInternalServerError)
+		return
 	}
 	w.Header().Add("Content-Type", "application/json")
 	_, err = w.Write(buf)
