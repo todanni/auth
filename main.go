@@ -1,11 +1,13 @@
 package main
 
 import (
+	b64 "encoding/base64"
 	"net/http"
 	"os"
 
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/oauth2/google"
 
 	"github.com/todanni/auth/config"
 	"github.com/todanni/auth/database"
@@ -15,7 +17,7 @@ import (
 )
 
 func main() {
-	// Read config
+	// Read oauthConfig
 	cfg, err := config.NewFromEnv()
 	if err != nil {
 		log.Error(err)
@@ -35,13 +37,23 @@ func main() {
 		log.Fatalf("couldn't auto migrate: %v", err)
 	}
 
+	// Create storage with the DB connection
 	strg := storage.NewUserStorage(db)
 
 	// Initialise router
 	r := mux.NewRouter()
 
+	// Create OAuth oauthConfig
+	googleCredentials := os.Getenv("GOOGLE_CREDENTIALS")
+	decodedCredentials, err := b64.StdEncoding.DecodeString(googleCredentials)
+
+	oauthConfig, err := google.ConfigFromJSON(decodedCredentials)
+	if err != nil {
+		log.Fatalf("Unable to parse client secret file to oauthConfig: %v", err)
+	}
+
 	// Create HTTP service
-	auth.NewAuthService(r, cfg, &strg)
+	auth.NewAuthService(r, cfg, &strg, oauthConfig)
 
 	// Start the servers and listen
 	log.Fatal(http.ListenAndServe(":8083", r))

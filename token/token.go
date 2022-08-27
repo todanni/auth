@@ -67,8 +67,5 @@ func IssueToDanniRefreshToken(userID int) (models.RefreshToken, error) {
 		Revoked:   false,
 		ExpiresAt: time.Now().Add(RefreshTokenExpirationTime),
 	}
-
-	//TODO: the token should be saved in the DB
-
 	return refreshToken, nil
 }

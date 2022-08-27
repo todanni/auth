@@ -23,10 +23,11 @@ type AuthService interface {
 }
 
 type authService struct {
-	router  *mux.Router
-	server  *osin.Server
-	storage *storage.UserStorage
-	config  config.Config
+	router      *mux.Router
+	server      *osin.Server
+	storage     *storage.UserStorage
+	config      config.Config
+	oauthConfig *oauth2.Config
 }
 
 const (
@@ -34,11 +35,12 @@ const (
 	RefreshTokenCookieName = "todanni-refresh-token"
 )
 
-func NewAuthService(router *mux.Router, conf config.Config, strg *storage.UserStorage) AuthService {
+func NewAuthService(router *mux.Router, conf config.Config, strg *storage.UserStorage, oauthConfig *oauth2.Config) AuthService {
 	server := &authService{
-		router:  router,
-		config:  conf,
-		storage: strg,
+		oauthConfig: oauthConfig,
+		config:      conf,
+		router:      router,
+		storage:     strg,
 	}
 	server.routes()
 	return server
@@ -50,17 +52,19 @@ func (s *authService) LoginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
-	config := oauth2.Config{}
+	log.Info("Received callback request")
 	ctx := context.Background()
 
 	code := r.URL.Query().Get("code")
+	log.Info(code)
 
-	tok, err := config.Exchange(ctx, code)
+	tok, err := s.oauthConfig.Exchange(ctx, code)
 	if err != nil {
 		log.Fatalf("Unable to retrieve token from web: %v", err)
 	}
 
 	idToken := tok.Extra("id_token").(string)
+	log.Info(idToken)
 	email, err := token.ValidateGoogleToken(ctx, idToken)
 	if err != nil {
 		http.Error(w, "invalid Google token", http.StatusBadRequest)
@@ -94,8 +98,8 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 		SameSite: 2,
 	})
-
 	refreshToken, err := token.IssueToDanniRefreshToken(int(result.ID))
+	// TODO: Save the token in the DB
 	http.SetCookie(w, &http.Cookie{
 		Name:     RefreshTokenCookieName,
 		Value:    refreshToken.Value,
