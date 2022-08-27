@@ -58,6 +58,8 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 	code := r.URL.Query().Get("code")
 	log.Info(code)
 
+	log.Info(s.oauthConfig)
+
 	tok, err := s.oauthConfig.Exchange(ctx, code)
 	if err != nil {
 		log.Errorf("Couldn't exchange token: %v", err)
