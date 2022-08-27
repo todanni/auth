@@ -68,6 +68,7 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 	log.Info(idToken)
 	email, err := token.ValidateGoogleToken(ctx, idToken)
 	if err != nil {
+		log.Errorf("Couldn't validate token: %v", err)
 		http.Error(w, "invalid Google token", http.StatusBadRequest)
 		return
 	}
@@ -75,6 +76,7 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 	// Check if user exists
 	result, err := s.storage.GetUser(email)
 	if err != nil {
+		log.Errorf("Couldn't check if user exists: %v", err)
 		http.Error(w, "some error with user", http.StatusInternalServerError)
 		return
 	}
@@ -83,6 +85,7 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 	if result.ID == 0 {
 		result, err = s.storage.CreateUser(email, "google")
 		if err != nil {
+			log.Errorf("Couldn't create user: %v", err)
 			http.Error(w, "couldn't create new user", http.StatusInternalServerError)
 			return
 		}
@@ -90,6 +93,7 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 
 	accessToken, err := token.IssueToDanniToken(email, s.config.PrivateJWK)
 	if err != nil {
+		log.Errorf("Couldn't issue todanni token: %v", err)
 		http.Error(w, "couldn't create the ToDanni token", http.StatusInternalServerError)
 		return
 	}
