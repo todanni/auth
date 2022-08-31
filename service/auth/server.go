@@ -117,7 +117,7 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		HttpOnly: true,
 	})
-	http.Redirect(w, r, "https://todanni.com/tasks", http.StatusFound)
+	http.Redirect(w, r, "/tasks", http.StatusFound)
 }
 
 func (s *authService) RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
@@ -156,16 +156,19 @@ func (s *authService) UserInfoHandler(w http.ResponseWriter, r *http.Request) {
 	accessTokenCookie, err := r.Cookie(AccessTokenCookieName)
 	if err != nil {
 		http.Error(w, "unauthorised", http.StatusUnauthorized)
+		return
 	}
 
 	userInfo, err := token.ValidateToDanniToken(accessTokenCookie.Value)
 	switch err {
 	case token.MissingFieldError:
 		http.Error(w, "unauthorised", http.StatusUnauthorized)
+		return
 	case nil:
 		break
 	default:
 		http.Error(w, "invalid token", http.StatusForbidden)
+		return
 	}
 
 	marshalled, err := json.Marshal(userInfo)
