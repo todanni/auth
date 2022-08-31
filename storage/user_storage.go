@@ -20,6 +20,7 @@ func (storage *UserStorage) CreateUser(email, loginType, profilePic string) (mod
 	user := models.User{
 		Email:     email,
 		LoginType: loginType,
+		ProfilePic: profilePic,
 	}
 	result := storage.db.Create(&user)
 	return user, result.Error

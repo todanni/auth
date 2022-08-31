@@ -15,7 +15,7 @@ import (
 
 const (
 	GoogleCertsUrl             = "https://www.googleapis.com/oauth2/v3/certs"
-	ToDanniCertsUrl            = "https://todanni.com/auth/public-key"
+	ToDanniCertsUrl            = "http://localhost:8083/auth/public-key"
 	ToDanniTokenIssuer         = "todanni.com"
 	RefreshTokenExpirationTime = time.Hour * 60 * 30
 )
@@ -48,14 +48,16 @@ func ValidateGoogleToken(ctx context.Context, tkn string) (string, error) {
 	return email.(string), nil
 }
 
-func IssueToDanniToken(email string, privateKey jwk.Key) (string, error) {
+func IssueToDanniToken(user models.User, privateKey jwk.Key) (string, error) {
 	t, err := jwt.NewBuilder().Issuer(ToDanniTokenIssuer).IssuedAt(time.Now()).Build()
 	if err != nil {
 		return "", err
 	}
 
 	// Set the custom claims
-	t.Set("email", email)
+	t.Set("email", user.Email)
+	t.Set("userID", user.ID)
+	t.Set("profilePic", user.ProfilePic)
 
 	signedJWT, err := jwt.Sign(t, jwa.RS256, privateKey)
 	if err != nil {
@@ -81,6 +83,7 @@ func ValidateToDanniToken(token string) (models.UserInfo, error) {
 	var userInfo models.UserInfo
 
 	autoRefresh := jwk.NewAutoRefresh(context.Background())
+	autoRefresh.Configure(ToDanniCertsUrl, jwk.WithMinRefreshInterval(time.Hour*1))
 	keySet, err := autoRefresh.Fetch(context.Background(), ToDanniCertsUrl)
 	if err != nil {
 		return userInfo, err
@@ -101,7 +104,7 @@ func ValidateToDanniToken(token string) (models.UserInfo, error) {
 	if !ok {
 		return userInfo, MissingFieldError
 	}
-	userInfo.UserID = userid.(int)
+	userInfo.UserID = int(userid.(float64))
 
 	profilePic, ok := parsed.Get("profilePic")
 	if !ok {

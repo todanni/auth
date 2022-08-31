@@ -12,6 +12,7 @@ import (
 	"golang.org/x/oauth2"
 
 	"github.com/todanni/auth/config"
+	"github.com/todanni/auth/models"
 	"github.com/todanni/auth/storage"
 	"github.com/todanni/auth/token"
 )
@@ -94,7 +95,7 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	accessToken, err := token.IssueToDanniToken(email, s.config.PrivateJWK)
+	accessToken, err := token.IssueToDanniToken(result, s.config.PrivateJWK)
 	if err != nil {
 		log.Errorf("Couldn't issue todanni token: %v", err)
 		http.Error(w, "couldn't create the ToDanni token", http.StatusInternalServerError)
@@ -122,8 +123,9 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 
 func (s *authService) RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
 	//TODO: Check that the provided refresh token is valid by querying the database
+	var user models.User
 
-	accessToken, err := token.IssueToDanniToken("email", s.config.PrivateJWK)
+	accessToken, err := token.IssueToDanniToken(user, s.config.PrivateJWK)
 	if err != nil {
 		http.Error(w, "couldn't issue refresh token", http.StatusInternalServerError)
 	}
