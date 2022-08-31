@@ -20,6 +20,7 @@ type AuthService interface {
 	LoginHandler(w http.ResponseWriter, r *http.Request)
 	CallbackHandler(w http.ResponseWriter, r *http.Request)
 	RefreshTokenHandler(w http.ResponseWriter, r *http.Request)
+	UserInfoHandler(w http.ResponseWriter, r *http.Request)
 }
 
 type authService struct {
@@ -85,7 +86,7 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 
 	// User doesn't exist, we have to create it
 	if result.ID == 0 {
-		result, err = s.storage.CreateUser(email, "google")
+		result, err = s.storage.CreateUser(email, "google", "https://www.dictionary.com/e/wp-content/uploads/2018/03/rickrolling-300x300.jpg")
 		if err != nil {
 			log.Errorf("Couldn't create user: %v", err)
 			http.Error(w, "couldn't create new user", http.StatusInternalServerError)
@@ -116,7 +117,7 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		HttpOnly: true,
 	})
-	http.Redirect(w, r, "https://todanni.com/", http.StatusFound)
+	http.Redirect(w, r, "https://todanni.com/tasks", http.StatusFound)
 }
 
 func (s *authService) RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
@@ -148,4 +149,31 @@ func (s *authService) ServePublicKey(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Add("Content-Type", "application/json")
 	_, err = w.Write(buf)
+}
+
+func (s *authService) UserInfoHandler(w http.ResponseWriter, r *http.Request) {
+	// Check if cookie is set
+	accessTokenCookie, err := r.Cookie(AccessTokenCookieName)
+	if err != nil {
+		http.Error(w, "unauthorised", http.StatusUnauthorized)
+	}
+
+	userInfo, err := token.ValidateToDanniToken(accessTokenCookie.Value)
+	switch err {
+	case token.MissingFieldError:
+		http.Error(w, "unauthorised", http.StatusUnauthorized)
+	case nil:
+		break
+	default:
+		http.Error(w, "invalid token", http.StatusForbidden)
+	}
+
+	marshalled, err := json.Marshal(userInfo)
+	if err != nil {
+		http.Error(w, "couldn't marshal token", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Add("Content-Type", "application/json")
+	w.Write(marshalled)
 }

@@ -15,8 +15,13 @@ import (
 
 const (
 	GoogleCertsUrl             = "https://www.googleapis.com/oauth2/v3/certs"
+	ToDanniCertsUrl            = "https://todanni.com/auth/public-key"
 	ToDanniTokenIssuer         = "todanni.com"
 	RefreshTokenExpirationTime = time.Hour * 60 * 30
+)
+
+var (
+	MissingFieldError = errors.New("missing field in token")
 )
 
 // ValidateGoogleToken follows the OAuth 2.0 spec to validate token
@@ -68,4 +73,41 @@ func IssueToDanniRefreshToken(userID int) (models.RefreshToken, error) {
 		ExpiresAt: time.Now().Add(RefreshTokenExpirationTime),
 	}
 	return refreshToken, nil
+}
+
+// ValidateToDanniToken checks the token provided is issued by todanni
+// and returns the email of the user it belongs to
+func ValidateToDanniToken(token string) (models.UserInfo, error) {
+	var userInfo models.UserInfo
+
+	autoRefresh := jwk.NewAutoRefresh(context.Background())
+	keySet, err := autoRefresh.Fetch(context.Background(), ToDanniCertsUrl)
+	if err != nil {
+		return userInfo, err
+	}
+
+	parsed, err := jwt.Parse([]byte(token), jwt.WithKeySet(keySet), jwt.WithValidate(true))
+	if err != nil {
+		return userInfo, err
+	}
+
+	email, ok := parsed.Get("email")
+	if !ok {
+		return userInfo, MissingFieldError
+	}
+	userInfo.Email = email.(string)
+
+	userid, ok := parsed.Get("userID")
+	if !ok {
+		return userInfo, MissingFieldError
+	}
+	userInfo.UserID = userid.(int)
+
+	profilePic, ok := parsed.Get("profilePic")
+	if !ok {
+		return userInfo, MissingFieldError
+	}
+	userInfo.ProfilePic = profilePic.(string)
+
+	return userInfo, err
 }
