@@ -15,6 +15,7 @@ import (
 type DashboardService interface {
 	CreateDashboardHandler(w http.ResponseWriter, r *http.Request)
 	GetDashboardHandler(w http.ResponseWriter, r *http.Request)
+	ListDashboardsHandler(w http.ResponseWriter, r *http.Request)
 	AcceptDashboardInviteHandler(w http.ResponseWriter, r *http.Request)
 	RejectDashboardInviteHandler(w http.ResponseWriter, r *http.Request)
 	DeleteDashboardHandler(w http.ResponseWriter, r *http.Request)
@@ -38,6 +39,38 @@ type dashboardService struct {
 	router           *mux.Router
 	dashboardStorage storage.DashboardStorage
 	userStorage      storage.UserStorage
+}
+
+func (s *dashboardService) ListDashboardsHandler(w http.ResponseWriter, r *http.Request) {
+	// Check if cookie is set
+	accessTokenCookie, err := r.Cookie(AccessTokenCookieName)
+	if err != nil {
+		http.Error(w, "unauthorised", http.StatusUnauthorized)
+		return
+	}
+
+	// Validate JWT token and get the user ID
+	userInfo, err := token.ValidateToDanniToken(accessTokenCookie.Value)
+	if err != nil {
+		log.Error(err)
+		http.Error(w, "unauthorised", http.StatusUnauthorized)
+		return
+	}
+
+	dashboards := make([]models.Dashboard, 0)
+	dashboards, err = s.dashboardStorage.List(userInfo.UserID)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	responseBody, err := json.Marshal(dashboards)
+	if err != nil {
+		http.Error(w, "couldn't marshal body", http.StatusInternalServerError)
+	}
+
+	w.Header().Add("Content-Type", "application/json")
+	w.Write(responseBody)
 }
 
 func (s *dashboardService) CreateDashboardHandler(w http.ResponseWriter, r *http.Request) {

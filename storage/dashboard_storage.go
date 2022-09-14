@@ -10,6 +10,7 @@ import (
 
 type DashboardStorage interface {
 	Create(owner, invited uint) (models.Dashboard, error)
+	List(userid uint) ([]models.Dashboard, error)
 	GetById(id string) (models.Dashboard, error)
 	UpdateStatus(id string, status models.Status) (models.Dashboard, error)
 	Delete(id string) error
@@ -23,6 +24,17 @@ func NewDashboardStorage(db *gorm.DB) DashboardStorage {
 
 type dashboardStorage struct {
 	db *gorm.DB
+}
+
+func (s dashboardStorage) List(userid uint) ([]models.Dashboard, error) {
+	var dashboards []models.Dashboard
+
+	result := s.db.Where("owner", userid).Find(&dashboards)
+	if result.Error != nil {
+		return dashboards, result.Error
+	}
+
+	return dashboards, nil
 }
 
 func (s dashboardStorage) Create(owner, invited uint) (models.Dashboard, error) {

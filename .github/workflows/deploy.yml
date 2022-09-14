@@ -76,7 +76,7 @@ jobs:
           ## Traefik labels
           HOST_LABEL: traefik.http.routers.${{ github.event.repository.name }}.rule=Host(`todanni.com`) && PathPrefix(`/`)
           MIDDLEWARE_LABEL: traefik.http.routers.${{ github.event.repository.name }}.middlewares=https-redirect@docker
-          TLS_HOST_LABEL: traefik.http.routers.${{ github.event.repository.name }}-tls.rule=Host(`todanni.com`) && PathPrefix(`/auth`) && PathPrefix(`/api/dashboard`)
+          TLS_HOST_LABEL: traefik.http.routers.${{ github.event.repository.name }}-tls.rule=Host(`todanni.com`) && PathPrefix(`/auth`) && PathPrefix(`/api/dashboards`)
           TLS_CERT_LABEL: traefik.http.routers.${{ github.event.repository.name }}-tls.tls.certresolver=letsencrypt
           TLS_LABEL: traefik.http.routers.${{ github.event.repository.name }}-tls.tls=true
           ENABLE_LABEL: traefik.enable=true
