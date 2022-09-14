@@ -13,5 +13,5 @@ type User struct {
 type UserInfo struct {
 	Email      string `json:"email"`
 	ProfilePic string `json:"profilePic"`
-	UserID     int    `json:"userID"`
+	UserID     uint   `json:"userID"`
 }

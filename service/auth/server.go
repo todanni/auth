@@ -70,6 +70,7 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 
 	idToken := tok.Extra("id_token").(string)
 	log.Info(idToken)
+
 	email, err := token.ValidateGoogleToken(ctx, idToken)
 	if err != nil {
 		log.Errorf("Couldn't validate token: %v", err)

@@ -14,6 +14,7 @@ import (
 	"github.com/todanni/auth/database"
 	"github.com/todanni/auth/models"
 	"github.com/todanni/auth/service/auth"
+	"github.com/todanni/auth/service/dashboard"
 	"github.com/todanni/auth/storage"
 )
 
@@ -39,7 +40,7 @@ func main() {
 	}
 
 	// Create storage with the DB connection
-	strg := storage.NewUserStorage(db)
+	userStorage := storage.NewUserStorage(db)
 
 	// Initialise router
 	r := mux.NewRouter()
@@ -53,8 +54,11 @@ func main() {
 		log.Fatalf("Unable to parse client secret file to oauthConfig: %v", err)
 	}
 
-	// Create HTTP service
-	auth.NewAuthService(r, cfg, &strg, oauthConfig)
+	// Create auth service
+	auth.NewAuthService(r, cfg, &userStorage, oauthConfig)
+
+	// Create dashboard service
+	dashboard.NewDashboardService(storage.NewDashboardStorage(db), userStorage, r)
 
 	// Start the servers and listen
 	log.Fatal(http.ListenAndServe(":8083", r))
