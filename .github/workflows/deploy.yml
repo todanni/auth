@@ -46,7 +46,7 @@ jobs:
           webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
           color: "#FF0000"
-          message: "Failed to build Dev Images for ${{ github.repository }} \n https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id}}"
+          message: "Failed to build docker image for ${{ github.repository }} \n https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id}}"
 
       -
         name: Send discord success message
@@ -56,7 +56,7 @@ jobs:
           webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
           color: "#48f442"
-          message: "Dev Images built for ${{ github.repository }}. \n https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id}}"
+          message: "Image built successfully for ${{ github.repository }}. \n https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id}}"
 
       ## Send result to discord
   run:
@@ -103,7 +103,7 @@ jobs:
           webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
           color: "#FF0000"
-          message: "Failed to run Dev images for ${{ github.repository }} \n https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id}}"
+          message: "Failed to run latest docker image for ${{ github.repository }} \n https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id}}"
 
       -
         name: Send discord success message
@@ -113,4 +113,4 @@ jobs:
           webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
           color: "#48f442"
-          message: "Dev is now running latest images for ${{ github.repository }}. \n https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id}}"
+          message: "Latest image now running in production for for ${{ github.repository }}. \n https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id}}"
