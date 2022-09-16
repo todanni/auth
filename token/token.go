@@ -140,6 +140,9 @@ func ValidateToDanniToken(token string) (models.UserInfo, error) {
 	if !ok {
 		return userInfo, MissingFieldError
 	}
+	log.Info("THIS SHOULD FKIN WORK")
+	log.Info(userid.(float64))
+
 	userInfo.UserID = uint(userid.(float64))
 
 	profilePic, ok := parsed.Get("profilePic")
