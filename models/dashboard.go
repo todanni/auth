@@ -7,7 +7,7 @@ import (
 type Dashboard struct {
 	Owner   uint   `json:"owner"`
 	Status  Status `json:"status"`
-	Members []User `json:"members"`
+	Members []User `json:"members" gorm:"many2many:user_dashboards;"`
 	gorm.Model
 }
 
