@@ -3,7 +3,6 @@ package storage
 import (
 	"errors"
 
-	"github.com/lib/pq"
 	"gorm.io/gorm"
 
 	"github.com/todanni/auth/models"
@@ -40,9 +39,8 @@ func (s dashboardStorage) List(userid uint) ([]models.Dashboard, error) {
 
 func (s dashboardStorage) Create(owner, invited uint) (models.Dashboard, error) {
 	dashboard := models.Dashboard{
-		Owner:   owner,
-		Members: pq.Int64Array{int64(owner), int64(invited)},
-		Status:  models.PendingStatus,
+		Owner:  owner,
+		Status: models.PendingStatus,
 	}
 
 	result := s.db.Create(&dashboard)
