@@ -17,7 +17,7 @@ import (
 const (
 	GoogleCertsUrl = "https://www.googleapis.com/oauth2/v3/certs"
 	//TODO: why is this localhost?
-	ToDanniCertsUrl            = "http://localhost:8083/auth/public-key"
+	ToDanniCertsUrl            = "http://todanni.com/auth/public-key"
 	ToDanniTokenIssuer         = "todanni.com"
 	RefreshTokenExpirationTime = time.Hour * 60 * 30
 )
@@ -140,7 +140,7 @@ func ValidateToDanniToken(token string) (models.UserInfo, error) {
 	if !ok {
 		return userInfo, MissingFieldError
 	}
-	userInfo.UserID = userid.(uint)
+	userInfo.UserID = uint(userid.(float64))
 
 	profilePic, ok := parsed.Get("profilePic")
 	if !ok {
