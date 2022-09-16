@@ -3,6 +3,7 @@ package storage
 import (
 	"errors"
 
+	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 
 	"github.com/todanni/auth/models"
@@ -46,6 +47,23 @@ func (s dashboardStorage) Create(owner, invited uint) (models.Dashboard, error) 
 	result := s.db.Create(&dashboard)
 	if result.Error != nil {
 		return models.Dashboard{}, errors.New("couldn't create the dashboard")
+	}
+
+	users := []models.User{{
+		Model: gorm.Model{
+			ID: owner,
+		},
+	},
+		{
+			Model: gorm.Model{
+				ID: invited,
+			},
+		},
+	}
+
+	err := s.db.Model(&dashboard).Association("Users").Append(users)
+	if err != nil {
+		log.Error(err)
 	}
 
 	return dashboard, nil
