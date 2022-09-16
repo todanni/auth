@@ -1,6 +1,8 @@
 package auth
 
-import "net/http"
+import (
+	"net/http"
+)
 
 const (
 	LoginHandler        = "/auth/login"
@@ -17,5 +19,4 @@ func (s *authService) routes() {
 	s.router.HandleFunc(RefreshTokenHandler, s.RefreshTokenHandler)
 	s.router.HandleFunc(PublicKeyHandler, s.ServePublicKey).Methods(http.MethodGet)
 	s.router.HandleFunc(UserInfoHandler, s.UserInfoHandler).Methods(http.MethodGet)
-
 }

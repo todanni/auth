@@ -49,8 +49,7 @@ func NewAuthService(router *mux.Router, conf config.Config, strg *storage.UserSt
 }
 
 func (s *authService) LoginHandler(w http.ResponseWriter, r *http.Request) {
-	//TODO implement me
-	panic("implement me")
+	http.Error(w, "Unimplemented", http.StatusMethodNotAllowed)
 }
 
 func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
