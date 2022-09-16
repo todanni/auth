@@ -3,7 +3,6 @@ package storage
 import (
 	"errors"
 
-	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 
 	"github.com/todanni/auth/models"
@@ -30,9 +29,9 @@ type dashboardStorage struct {
 func (s dashboardStorage) List(userid uint) ([]models.Dashboard, error) {
 	var dashboards []models.Dashboard
 
-	result := s.db.Where("owner", userid).Find(&dashboards)
+	result := s.db.Model(&models.Dashboard{}).Preload("Members").Find(&dashboards)
 	if result.Error != nil {
-		return dashboards, result.Error
+		return dashboards, errors.New("couldn't find dashboards")
 	}
 
 	return dashboards, nil
@@ -61,9 +60,9 @@ func (s dashboardStorage) Create(owner, invited uint) (models.Dashboard, error) 
 		},
 	}
 
-	err := s.db.Model(&dashboard).Association("Users").Append(users)
+	err := s.db.Model(&dashboard).Association("Members").Append(users)
 	if err != nil {
-		log.Error(err)
+		return dashboard, err
 	}
 
 	return dashboard, nil

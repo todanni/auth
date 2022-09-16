@@ -22,3 +22,21 @@ const (
 type DashboardCreateRequest struct {
 	Email string `json:"email"`
 }
+
+type DashboardCreateResponse struct {
+	Owner   uint   `json:"owner"`
+	Status  Status `json:"status"`
+	Members []uint `json:"members"`
+}
+
+type ListDashboardsResponse struct {
+	Owner   uint     `json:"owner"`
+	Status  Status   `json:"status"`
+	Members []Member `json:"members"`
+}
+
+type Member struct {
+	ID         uint   `json:"ID"`
+	Email      string `json:"email"`
+	ProfilePic string `json:"profilePic"`
+}

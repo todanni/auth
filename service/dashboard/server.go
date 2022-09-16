@@ -64,7 +64,27 @@ func (s *dashboardService) ListDashboardsHandler(w http.ResponseWriter, r *http.
 		return
 	}
 
-	responseBody, err := json.Marshal(dashboards)
+	response := make([]models.ListDashboardsResponse, 0)
+	for _, dashboard := range dashboards {
+		response = append(response, models.ListDashboardsResponse{
+			Owner:  dashboard.Owner,
+			Status: dashboard.Status,
+			Members: []models.Member{
+				{
+					ID:         dashboard.Members[0].ID,
+					Email:      dashboard.Members[0].Email,
+					ProfilePic: dashboard.Members[0].ProfilePic,
+				},
+				{
+					ID:         dashboard.Members[1].ID,
+					Email:      dashboard.Members[1].Email,
+					ProfilePic: dashboard.Members[1].ProfilePic,
+				},
+			},
+		})
+	}
+
+	responseBody, err := json.Marshal(response)
 	if err != nil {
 		http.Error(w, "couldn't marshal body", http.StatusInternalServerError)
 	}
@@ -97,15 +117,23 @@ func (s *dashboardService) CreateDashboardHandler(w http.ResponseWriter, r *http
 		return
 	}
 
-	//TODO: Query the DB for the user to get their ID and ensure they exist
-	// Implement GRPC for this
 	user, err := s.userStorage.GetUser(requestBody.Email)
 	if err != nil {
 		http.Error(w, "couldn't find user", http.StatusBadRequest)
 	}
 
 	dashboard, err := s.dashboardStorage.Create(userInfo.UserID, user.ID)
-	responseBody, err := json.Marshal(dashboard)
+	if err != nil {
+		http.Error(w, "couldn't persist the new dashboard", http.StatusInternalServerError)
+	}
+
+	response := models.DashboardCreateResponse{
+		Owner:   dashboard.Owner,
+		Status:  dashboard.Status,
+		Members: []uint{dashboard.Members[0].ID, dashboard.Members[1].ID},
+	}
+
+	responseBody, err := json.Marshal(response)
 	if err != nil {
 		http.Error(w, "couldn't marshal body", http.StatusInternalServerError)
 	}
