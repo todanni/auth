@@ -46,7 +46,7 @@ jobs:
           webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
           color: "#FF0000"
-          message: "Failed to build docker image for ${{ github.repository }} \n https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id}}"
+          message: "Failed to build docker image for ${{ github.repository }} \n https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id}} \n ${{ github.event.commits[0].message }}"
           avatar_url: "https://github.com/todanni/auth/blob/main/images/account-lock-outline.png?raw=true"
 
       -
@@ -57,7 +57,7 @@ jobs:
           webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
           color: "#48f442"
-          message: "Image built successfully for ${{ github.repository }}. \n https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id}}"
+          message: "Image built successfully for ${{ github.repository }}. \n https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id}} \n ${{ github.event.commits[0].message }}"
           avatar_url: "https://github.com/todanni/auth/blob/main/images/account-lock-outline.png?raw=true"
 
       ## Send result to discord
@@ -105,7 +105,7 @@ jobs:
           webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
           color: "#FF0000"
-          message: "Failed to run latest docker image for ${{ github.repository }} \n https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id}}"
+          message: "Failed to run latest docker image for ${{ github.repository }} \n https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id}} \n ${{ github.event.commits[0].message }}"
           avatar_url: "https://github.com/todanni/auth/blob/main/images/account-lock-outline.png?raw=true"
 
       -
@@ -116,5 +116,5 @@ jobs:
           webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
           color: "#48f442"
-          message: "Latest image now running in production for for ${{ github.repository }}. \n https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id}}"
+          message: "Latest image now running in production for for ${{ github.repository }}. \n https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id}} \n ${{ github.event.commits[0].message }}"
           avatar_url: "https://github.com/todanni/auth/blob/main/images/account-lock-outline.png?raw=true"
