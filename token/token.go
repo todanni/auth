@@ -125,7 +125,7 @@ func ValidateToDanniToken(token string) (models.UserInfo, error) {
 		return userInfo, err
 	}
 
-	parsed, err := jwt.Parse([]byte(token), jwt.WithKeySet(keySet), jwt.WithValidate(true))
+	parsed, err := jwt.Parse([]byte(token), jwt.WithKeySet(keySet), jwt.WithValidate(true), jwt.WithTypedClaim("userID", uint(1)))
 	if err != nil {
 		return userInfo, err
 	}
@@ -140,10 +140,8 @@ func ValidateToDanniToken(token string) (models.UserInfo, error) {
 	if !ok {
 		return userInfo, MissingFieldError
 	}
-	log.Info("THIS SHOULD FKIN WORK")
-	log.Info(userid.(float64))
 
-	userInfo.UserID = uint(userid.(float64))
+	userInfo.UserID = userid.(uint)
 
 	profilePic, ok := parsed.Get("profilePic")
 	if !ok {
