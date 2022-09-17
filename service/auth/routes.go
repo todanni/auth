@@ -23,5 +23,4 @@ func (s *authService) routes() {
 	
 	// only UserInfoHandler requires auth
 	s.router.Handle(UserInfoHandler, middleware.NewEnsureAuth(s.UserInfoHandler)).Methods(http.MethodGet)
-	
 }

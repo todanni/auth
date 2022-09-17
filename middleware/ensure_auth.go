@@ -18,7 +18,7 @@ type EnsureAuth struct {
 }
 
 func (ea *EnsureAuth) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-    // Check if cookie is set
+	// Check if cookie is set
 	accessTokenCookie, err := r.Cookie(token.AccessTokenCookieName)
 	if err != nil {
 		http.Error(w, "unauthorised", http.StatusUnauthorized)
@@ -39,9 +39,9 @@ func (ea *EnsureAuth) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	ctx := context.WithValue(r.Context(), UserInfoContextKey, userInfo)
 
-    ea.handler(w, r.WithContext(ctx))
+	ea.handler(w, r.WithContext(ctx))
 }
 
 func NewEnsureAuth(handlerToWrap http.HandlerFunc) *EnsureAuth {
-    return &EnsureAuth{handlerToWrap}
+	return &EnsureAuth{handlerToWrap}
 }
