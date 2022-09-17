@@ -28,13 +28,14 @@ type dashboardStorage struct {
 
 func (s dashboardStorage) List(userid uint) ([]models.Dashboard, error) {
 	var dashboards []models.Dashboard
-
-	result := s.db.Model(&models.Dashboard{}).Preload("Members").Find(&dashboards)
+	var user models.User
+	
+	result := s.db.Model(&models.User{}).Preload("Dashboards.Members").First(&user, userid)
 	if result.Error != nil {
 		return dashboards, errors.New("couldn't find dashboards")
 	}
-
-	return dashboards, nil
+	
+	return user.Dashboards, nil
 }
 
 func (s dashboardStorage) Create(owner, invited uint) (models.Dashboard, error) {

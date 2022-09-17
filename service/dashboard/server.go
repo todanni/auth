@@ -57,8 +57,7 @@ func (s *dashboardService) ListDashboardsHandler(w http.ResponseWriter, r *http.
 		return
 	}
 
-	dashboards := make([]models.Dashboard, 0)
-	dashboards, err = s.dashboardStorage.List(userInfo.UserID)
+	dashboards, err := s.dashboardStorage.List(userInfo.UserID)
 	if err != nil {
 		log.Error(err)
 		return
