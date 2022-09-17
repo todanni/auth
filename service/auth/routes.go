@@ -2,6 +2,8 @@ package auth
 
 import (
 	"net/http"
+
+	"github.com/todanni/auth/middleware"
 )
 
 const (
@@ -18,5 +20,8 @@ func (s *authService) routes() {
 	s.router.HandleFunc(CallbackHandler, s.CallbackHandler)
 	s.router.HandleFunc(RefreshTokenHandler, s.RefreshTokenHandler)
 	s.router.HandleFunc(PublicKeyHandler, s.ServePublicKey).Methods(http.MethodGet)
-	s.router.HandleFunc(UserInfoHandler, s.UserInfoHandler).Methods(http.MethodGet)
+	
+	// only UserInfoHandler requires auth
+	s.router.Handle(UserInfoHandler, middleware.NewEnsureAuth(s.UserInfoHandler)).Methods(http.MethodGet)
+	
 }

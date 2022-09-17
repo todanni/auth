@@ -12,6 +12,7 @@ import (
 	"golang.org/x/oauth2"
 
 	"github.com/todanni/auth/config"
+	"github.com/todanni/auth/middleware"
 	"github.com/todanni/auth/models"
 	"github.com/todanni/auth/storage"
 	"github.com/todanni/auth/token"
@@ -33,11 +34,6 @@ type authService struct {
 	config           config.Config
 	oauthConfig      *oauth2.Config
 }
-
-const (
-	AccessTokenCookieName  = "todanni-access-token"
-	RefreshTokenCookieName = "todanni-refresh-token"
-)
 
 func NewAuthService(router *mux.Router, conf config.Config, userStorage *storage.UserStorage, dashboardStorage storage.DashboardStorage, projectStorage storage.ProjectStorage, oauthConfig *oauth2.Config) AuthService {
 	server := &authService{
@@ -120,7 +116,7 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	// Set access and refresh token cookies
 	http.SetCookie(w, &http.Cookie{
-		Name:     AccessTokenCookieName,
+		Name:     token.AccessTokenCookieName,
 		Value:    accessToken,
 		Path:     "/",
 		HttpOnly: true,
@@ -128,7 +124,7 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 	refreshToken, err := token.IssueToDanniRefreshToken(int(result.ID))
 	// TODO: Save the token in the DB
 	http.SetCookie(w, &http.Cookie{
-		Name:     RefreshTokenCookieName,
+		Name:     token.RefreshTokenCookieName,
 		Value:    refreshToken.Value,
 		Path:     "/",
 		HttpOnly: true,
@@ -156,7 +152,7 @@ func (s *authService) RefreshTokenHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	http.SetCookie(w, &http.Cookie{
-		Name:     AccessTokenCookieName,
+		Name:     token.AccessTokenCookieName,
 		Value:    accessToken,
 		Secure:   true,
 		HttpOnly: true,
@@ -179,25 +175,7 @@ func (s *authService) ServePublicKey(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *authService) UserInfoHandler(w http.ResponseWriter, r *http.Request) {
-	// Check if cookie is set
-	accessTokenCookie, err := r.Cookie(AccessTokenCookieName)
-	if err != nil {
-		http.Error(w, "unauthorised", http.StatusUnauthorized)
-		return
-	}
-
-	userInfo, err := token.ValidateToDanniToken(accessTokenCookie.Value)
-	switch err {
-	case token.MissingFieldError:
-		http.Error(w, "unauthorised", http.StatusUnauthorized)
-		return
-	case nil:
-		break
-	default:
-		http.Error(w, "invalid token", http.StatusForbidden)
-		return
-	}
-
+	userInfo := r.Context().Value(middleware.UserInfoContextKey).(models.UserInfo)
 	marshalled, err := json.Marshal(userInfo)
 	if err != nil {
 		http.Error(w, "couldn't marshal token", http.StatusInternalServerError)
