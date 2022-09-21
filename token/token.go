@@ -15,7 +15,7 @@ import (
 
 const (
 	GoogleCertsUrl = "https://www.googleapis.com/oauth2/v3/certs"
-	//TODO: why is this localhost?
+	// TODO: why is this localhost?
 	ToDanniCertsUrl            = "http://localhost:8083/auth/public-key"
 	ToDanniTokenIssuer         = "todanni.com"
 	RefreshTokenExpirationTime = time.Hour * 60 * 30

@@ -51,10 +51,6 @@ func NewAuthService(router *mux.Router, conf config.Config, userStorage *storage
 	return server
 }
 
-func (s *authService) LoginHandler(w http.ResponseWriter, r *http.Request) {
-	http.Error(w, "Unimplemented", http.StatusMethodNotAllowed)
-}
-
 func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 	log.Info("Received callback request")
 	ctx := context.Background()
@@ -209,4 +205,8 @@ func (s *authService) UserInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Add("Content-Type", "application/json")
 	w.Write(marshalled)
+}
+
+func (s *authService) LoginHandler(w http.ResponseWriter, r *http.Request) {
+	http.Error(w, "Unimplemented", http.StatusMethodNotAllowed)
 }
