@@ -16,6 +16,7 @@ import (
 	"github.com/todanni/auth/models"
 	"github.com/todanni/auth/service/auth"
 	"github.com/todanni/auth/service/dashboard"
+	"github.com/todanni/auth/service/project"
 	"github.com/todanni/auth/storage"
 )
 
@@ -43,12 +44,12 @@ func main() {
 	// Open database connection
 	db, err := database.Open(cfg)
 	if err != nil {
-		log.Error(err)
+		log.Error(err)±
 		os.Exit(1)
 	}
 
 	// Perform migrations
-	err = db.AutoMigrate(&models.User{}, &models.RefreshToken{}, &models.Dashboard{})
+	err = db.AutoMigrate(&models.User{}, &models.RefreshToken{}, &models.Dashboard{}, &models.Project{})
 	if err != nil {
 		log.Fatalf("couldn't auto migrate: %v", err)
 	}
@@ -74,6 +75,9 @@ func main() {
 
 	// Create dashboard service
 	dashboard.NewDashboardService(storage.NewDashboardStorage(db), userStorage, r)
+
+	// Create project service
+	project.NewProjectService(r)
 
 	// Start the servers and listen
 	log.Fatal(http.ListenAndServe(":8083", r))
