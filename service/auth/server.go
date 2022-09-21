@@ -39,13 +39,14 @@ const (
 	RefreshTokenCookieName = "todanni-refresh-token"
 )
 
-func NewAuthService(router *mux.Router, conf config.Config, userStorage *storage.UserStorage, dashboardStorage storage.DashboardStorage, oauthConfig *oauth2.Config) AuthService {
+func NewAuthService(router *mux.Router, conf config.Config, userStorage *storage.UserStorage, dashboardStorage storage.DashboardStorage, projectStorage storage.ProjectStorage, oauthConfig *oauth2.Config) AuthService {
 	server := &authService{
 		oauthConfig:      oauthConfig,
 		config:           conf,
 		router:           router,
 		userStorage:      userStorage,
 		dashboardStorage: dashboardStorage,
+		projectStorage:   projectStorage,
 	}
 	server.routes()
 	return server

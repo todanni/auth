@@ -72,7 +72,7 @@ func main() {
 	}
 
 	// Create auth service
-	auth.NewAuthService(r, cfg, &userStorage, dashboardStorage, oauthConfig)
+	auth.NewAuthService(r, cfg, &userStorage, dashboardStorage, projectStorage, oauthConfig)
 
 	// Create dashboard service
 	dashboard.NewDashboardService(storage.NewDashboardStorage(db), userStorage, r)
