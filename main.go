@@ -44,7 +44,7 @@ func main() {
 	// Open database connection
 	db, err := database.Open(cfg)
 	if err != nil {
-		log.Error(err)±
+		log.Error(err)
 		os.Exit(1)
 	}
 
