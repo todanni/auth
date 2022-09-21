@@ -28,5 +28,5 @@ func SetProjectPermissions(projects []models.Project, token jwt.Token) {
 		userDashboardIDs = append(userDashboardIDs, project.ID)
 	}
 
-	token.Set("dashboards", userDashboardIDs)
+	token.Set("projects", userDashboardIDs)
 }
