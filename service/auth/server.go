@@ -25,11 +25,12 @@ type AuthService interface {
 }
 
 type authService struct {
-	router      *mux.Router
-	server      *osin.Server
-	storage     *storage.UserStorage
-	config      config.Config
-	oauthConfig *oauth2.Config
+	router           *mux.Router
+	server           *osin.Server
+	userStorage      *storage.UserStorage
+	dashboardStorage storage.DashboardStorage
+	config           config.Config
+	oauthConfig      *oauth2.Config
 }
 
 const (
@@ -37,12 +38,13 @@ const (
 	RefreshTokenCookieName = "todanni-refresh-token"
 )
 
-func NewAuthService(router *mux.Router, conf config.Config, strg *storage.UserStorage, oauthConfig *oauth2.Config) AuthService {
+func NewAuthService(router *mux.Router, conf config.Config, userStorage *storage.UserStorage, dashboardStorage storage.DashboardStorage, oauthConfig *oauth2.Config) AuthService {
 	server := &authService{
-		oauthConfig: oauthConfig,
-		config:      conf,
-		router:      router,
-		storage:     strg,
+		oauthConfig:      oauthConfig,
+		config:           conf,
+		router:           router,
+		userStorage:      userStorage,
+		dashboardStorage: dashboardStorage,
 	}
 	server.routes()
 	return server
@@ -78,7 +80,7 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if user exists
-	result, err := s.storage.GetUser(email)
+	result, err := s.userStorage.GetUser(email)
 	if err != nil {
 		log.Errorf("Couldn't check if user exists: %v", err)
 		http.Error(w, "some error with user", http.StatusInternalServerError)
@@ -87,7 +89,7 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 
 	// User doesn't exist, we have to create it
 	if result.ID == 0 {
-		result, err = s.storage.CreateUser(email, "google", "https://www.dictionary.com/e/wp-content/uploads/2018/03/rickrolling-300x300.jpg")
+		result, err = s.userStorage.CreateUser(email, "google", "https://www.dictionary.com/e/wp-content/uploads/2018/03/rickrolling-300x300.jpg")
 		if err != nil {
 			log.Errorf("Couldn't create user: %v", err)
 			http.Error(w, "couldn't create new user", http.StatusInternalServerError)
@@ -95,7 +97,15 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	accessToken, err := token.IssueToDanniToken(result, s.config.PrivateJWK)
+	dashboards := make([]models.Dashboard, 0)
+	if result.ID != 0 {
+		dashboards, err = s.dashboardStorage.List(result.ID)
+		if err != nil {
+			log.Error("couldn't look up user dashboards")
+		}
+	}
+
+	accessToken, err := token.IssueToDanniToken(result, s.config.PrivateJWK, dashboards)
 	if err != nil {
 		log.Errorf("Couldn't issue todanni token: %v", err)
 		http.Error(w, "couldn't create the ToDanni token", http.StatusInternalServerError)
@@ -125,7 +135,12 @@ func (s *authService) RefreshTokenHandler(w http.ResponseWriter, r *http.Request
 	//TODO: Check that the provided refresh token is valid by querying the database
 	var user models.User
 
-	accessToken, err := token.IssueToDanniToken(user, s.config.PrivateJWK)
+	dashboards, err := s.dashboardStorage.List(user.ID)
+	if err != nil {
+		log.Error("couldn't look up user dashboards")
+	}
+
+	accessToken, err := token.IssueToDanniToken(user, s.config.PrivateJWK, dashboards)
 	if err != nil {
 		http.Error(w, "couldn't issue refresh token", http.StatusInternalServerError)
 	}

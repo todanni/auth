@@ -26,19 +26,19 @@ type dashboardStorage struct {
 	db *gorm.DB
 }
 
-func (s dashboardStorage) List(userid uint) ([]models.Dashboard, error) {
+func (s *dashboardStorage) List(userid uint) ([]models.Dashboard, error) {
 	var dashboards []models.Dashboard
 	var user models.User
-	
+
 	result := s.db.Model(&models.User{}).Preload("Dashboards.Members").First(&user, userid)
 	if result.Error != nil {
 		return dashboards, errors.New("couldn't find dashboards")
 	}
-	
+
 	return user.Dashboards, nil
 }
 
-func (s dashboardStorage) Create(owner, invited uint) (models.Dashboard, error) {
+func (s *dashboardStorage) Create(owner, invited uint) (models.Dashboard, error) {
 	dashboard := models.Dashboard{
 		Owner:  owner,
 		Status: models.PendingStatus,
@@ -69,7 +69,7 @@ func (s dashboardStorage) Create(owner, invited uint) (models.Dashboard, error) 
 	return dashboard, nil
 }
 
-func (s dashboardStorage) GetById(id string) (models.Dashboard, error) {
+func (s *dashboardStorage) GetById(id string) (models.Dashboard, error) {
 	var dashboard models.Dashboard
 	result := s.db.First(&dashboard, id)
 
@@ -83,7 +83,7 @@ func (s dashboardStorage) GetById(id string) (models.Dashboard, error) {
 	}
 }
 
-func (s dashboardStorage) UpdateStatus(id string, status models.Status) (models.Dashboard, error) {
+func (s *dashboardStorage) UpdateStatus(id string, status models.Status) (models.Dashboard, error) {
 	var dashboard models.Dashboard
 
 	result := s.db.First(&dashboard, id).Update("status", status)
@@ -94,7 +94,7 @@ func (s dashboardStorage) UpdateStatus(id string, status models.Status) (models.
 	return dashboard, nil
 }
 
-func (s dashboardStorage) Delete(id string) error {
+func (s *dashboardStorage) Delete(id string) error {
 	result := s.db.Delete(&models.Dashboard{}, id)
 	return result.Error
 }

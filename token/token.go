@@ -49,7 +49,7 @@ func ValidateGoogleToken(ctx context.Context, tkn string) (string, error) {
 	return email.(string), nil
 }
 
-func IssueToDanniToken(user models.User, privateKey jwk.Key) (string, error) {
+func IssueToDanniToken(user models.User, privateKey jwk.Key, dashboards []models.Dashboard) (string, error) {
 	t, err := jwt.NewBuilder().Issuer(ToDanniTokenIssuer).IssuedAt(time.Now()).Build()
 	if err != nil {
 		return "", err
@@ -61,6 +61,7 @@ func IssueToDanniToken(user models.User, privateKey jwk.Key) (string, error) {
 	t.Set("profilePic", user.ProfilePic)
 
 	// TODO: set the dashboard claims
+	SetDashboardsPermissions(dashboards, t)
 
 	signedJWT, err := jwt.Sign(t, jwa.RS256, privateKey)
 	if err != nil {

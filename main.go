@@ -55,6 +55,7 @@ func main() {
 
 	// Create storage with the DB connection
 	userStorage := storage.NewUserStorage(db)
+	dashboardStorage := storage.NewDashboardStorage(db)
 
 	// Initialise router
 	r := mux.NewRouter()
@@ -69,7 +70,7 @@ func main() {
 	}
 
 	// Create auth service
-	auth.NewAuthService(r, cfg, &userStorage, oauthConfig)
+	auth.NewAuthService(r, cfg, &userStorage, dashboardStorage, oauthConfig)
 
 	// Create dashboard service
 	dashboard.NewDashboardService(storage.NewDashboardStorage(db), userStorage, r)
