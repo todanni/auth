@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+
+	"github.com/todanni/auth/storage"
 )
 
 type ProjectsService interface {
@@ -14,14 +16,18 @@ type ProjectsService interface {
 	DeleteProjectHandler(w http.ResponseWriter, r *http.Request)
 }
 
-func NewProjectService(router *mux.Router) ProjectsService {
-	service := &projectService{router: router}
+func NewProjectService(router *mux.Router, projectStorage storage.ProjectStorage) ProjectsService {
+	service := &projectService{
+		router:         router,
+		projectStorage: projectStorage,
+	}
 	service.routes()
 	return service
 }
 
 type projectService struct {
-	router *mux.Router
+	router         *mux.Router
+	projectStorage storage.ProjectStorage
 }
 
 func (s *projectService) UpdateProjectHandler(w http.ResponseWriter, r *http.Request) {

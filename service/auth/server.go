@@ -29,6 +29,7 @@ type authService struct {
 	server           *osin.Server
 	userStorage      *storage.UserStorage
 	dashboardStorage storage.DashboardStorage
+	projectStorage   storage.ProjectStorage
 	config           config.Config
 	oauthConfig      *oauth2.Config
 }
@@ -98,14 +99,21 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	dashboards := make([]models.Dashboard, 0)
+	projects := make([]models.Project, 0)
+
 	if result.ID != 0 {
 		dashboards, err = s.dashboardStorage.List(result.ID)
 		if err != nil {
 			log.Error("couldn't look up user dashboards")
 		}
+
+		projects, err = s.projectStorage.List(result.ID)
+		if err != nil {
+			log.Error("couldn't look up user dashboards")
+		}
 	}
 
-	accessToken, err := token.IssueToDanniToken(result, s.config.PrivateJWK, dashboards)
+	accessToken, err := token.IssueToDanniToken(result, s.config.PrivateJWK, dashboards, projects)
 	if err != nil {
 		log.Errorf("Couldn't issue todanni token: %v", err)
 		http.Error(w, "couldn't create the ToDanni token", http.StatusInternalServerError)
@@ -140,7 +148,12 @@ func (s *authService) RefreshTokenHandler(w http.ResponseWriter, r *http.Request
 		log.Error("couldn't look up user dashboards")
 	}
 
-	accessToken, err := token.IssueToDanniToken(user, s.config.PrivateJWK, dashboards)
+	projects, err := s.projectStorage.List(user.ID)
+	if err != nil {
+		log.Error("couldn't look up user dashboards")
+	}
+
+	accessToken, err := token.IssueToDanniToken(user, s.config.PrivateJWK, dashboards, projects)
 	if err != nil {
 		http.Error(w, "couldn't issue refresh token", http.StatusInternalServerError)
 	}

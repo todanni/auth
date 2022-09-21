@@ -57,6 +57,7 @@ func main() {
 	// Create storage with the DB connection
 	userStorage := storage.NewUserStorage(db)
 	dashboardStorage := storage.NewDashboardStorage(db)
+	projectStorage := storage.NewProjectStorage(db)
 
 	// Initialise router
 	r := mux.NewRouter()
@@ -77,7 +78,7 @@ func main() {
 	dashboard.NewDashboardService(storage.NewDashboardStorage(db), userStorage, r)
 
 	// Create project service
-	project.NewProjectService(r)
+	project.NewProjectService(r, projectStorage)
 
 	// Start the servers and listen
 	log.Fatal(http.ListenAndServe(":8083", r))

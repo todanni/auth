@@ -9,7 +9,7 @@ type User struct {
 	LoginType  string      `json:"loginType"`
 	ProfilePic string      `json:"profilePic"`
 	Dashboards []Dashboard `json:"-" gorm:"many2many:user_dashboards;"`
-	Projects   []Dashboard `json:"-" gorm:"many2many:user_projects;"`
+	Projects   []Project   `json:"-" gorm:"many2many:user_projects;"`
 }
 
 type UserInfo struct {
