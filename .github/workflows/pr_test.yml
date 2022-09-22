@@ -1,10 +1,10 @@
-name: Test PRs for the Auth service
+name: Test PR
 
 on: pull_request
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Checkout
         uses: actions/checkout@v3
