@@ -13,11 +13,11 @@ const (
 	UserInfoContextKey ContextKey = "userInfo"
 )
 
-type EnsureAuth struct {
-    handler http.HandlerFunc
+type AuthenticationCheck struct {
+	handler http.HandlerFunc
 }
 
-func (ea *EnsureAuth) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (ea *AuthenticationCheck) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Check if cookie is set
 	accessTokenCookie, err := r.Cookie(token.AccessTokenCookieName)
 	if err != nil {
@@ -42,6 +42,6 @@ func (ea *EnsureAuth) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ea.handler(w, r.WithContext(ctx))
 }
 
-func NewEnsureAuth(handlerToWrap http.HandlerFunc) *EnsureAuth {
-	return &EnsureAuth{handlerToWrap}
+func NewAuthenticationCheck(handlerToWrap http.HandlerFunc) *AuthenticationCheck {
+	return &AuthenticationCheck{handlerToWrap}
 }
