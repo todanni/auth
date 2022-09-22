@@ -60,9 +60,6 @@ func IssueToDanniToken(user models.User, privateKey jwk.Key, dashboards []models
 	t.Set("userID", user.ID)
 	t.Set("profilePic", user.ProfilePic)
 
-	SetDashboardsPermissions(dashboards, t)
-	SetProjectPermissions(projects, t)
-
 	signedJWT, err := jwt.Sign(t, jwa.RS256, privateKey)
 	if err != nil {
 		return "", err
