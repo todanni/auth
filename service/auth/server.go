@@ -185,7 +185,7 @@ func (s *authService) ServePublicKey(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *authService) UserInfoHandler(w http.ResponseWriter, r *http.Request) {
-	accessToken := r.Context().Value(middleware.AccessTokenContextKey).(token.ToDanniToken)
+	accessToken := r.Context().Value(middleware.AccessTokenContextKey).(*token.ToDanniToken)
 	log.Info(accessToken)
 
 	userInfo, err := accessToken.GetUserInfo()
