@@ -12,7 +12,7 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.8.0
 	github.com/thanhpk/randstr v1.0.4
-	github.com/todanni/token v1.0.0
+	github.com/todanni/token v1.0.1
 	golang.org/x/oauth2 v0.0.0-20220822191816-0ebed06d0094
 	google.golang.org/api v0.84.0
 	gorm.io/driver/postgres v1.3.9
