@@ -24,11 +24,15 @@ func NewToDanniToken() (*ToDanniToken, error) {
 	return &ToDanniToken{token: t}, nil
 }
 
+func New() *ToDanniToken {
+	t, _ := jwt.NewBuilder().Issuer(ToDanniTokenIssuer).IssuedAt(time.Now()).Build()
+	return &ToDanniToken{token: t}
+}
+
 func (t *ToDanniToken) Validate(token string, keySet jwk.Set) error {
 	parsed, err := jwt.Parse([]byte(token),
 		jwt.WithKeySet(keySet),
-		jwt.WithValidate(true),
-		jwt.WithTypedClaim("userID", uint(1)))
+		jwt.WithValidate(true))
 
 	if err != nil {
 		return err
@@ -38,7 +42,7 @@ func (t *ToDanniToken) Validate(token string, keySet jwk.Set) error {
 	return nil
 }
 
-func (t *ToDanniToken) SignToken(privateKey jwk.Key) (string, error) {
+func (t *ToDanniToken) SignedToken(privateKey jwk.Key) (string, error) {
 	signedJWT, err := jwt.Sign(t.token, jwa.RS256, privateKey)
 	if err != nil {
 		return "", err
@@ -76,8 +80,8 @@ func (t *ToDanniToken) GetUserInfo() (models.UserInfo, error) {
 	return userInfo.(models.UserInfo), nil
 }
 
-func (t *ToDanniToken) SetUserInfo(userInfo models.UserInfo) {
-	t.token.Set("user-info", userInfo)
+func (t *ToDanniToken) SetUserInfo(userInfo models.UserInfo) *ToDanniToken {
+	return t.setClaim("user-info", userInfo)
 }
 
 func (t *ToDanniToken) SetDashboardPermissions(dashboards []models.Dashboard) {
@@ -87,7 +91,7 @@ func (t *ToDanniToken) SetDashboardPermissions(dashboards []models.Dashboard) {
 		userDashboardIDs = append(userDashboardIDs, dashboard.ID)
 	}
 
-	t.token.Set("dashboards", userDashboardIDs)
+	t.setClaim("dashboards", userDashboardIDs)
 }
 
 func (t *ToDanniToken) SetProjectsPermissions(projects []models.Project) {
@@ -97,5 +101,10 @@ func (t *ToDanniToken) SetProjectsPermissions(projects []models.Project) {
 		userProjectIDs = append(userProjectIDs, project.ID)
 	}
 
-	t.token.Set("projects", userProjectIDs)
+	t.setClaim("projects", userProjectIDs)
+}
+
+func (t *ToDanniToken) setClaim(name string, value interface{}) *ToDanniToken {
+	_ = t.token.Set(name, value)
+	return t
 }
