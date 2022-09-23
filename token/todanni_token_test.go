@@ -35,7 +35,7 @@ func TestToDanniToken_GetAndSetUserInfo(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, testEmail, userInfo.Email)
 	require.Equal(t, testProfilePic, userInfo.ProfilePic)
-	require.Equal(t, 1, userInfo.UserID)
+	require.Equal(t, uint(1), userInfo.UserID)
 }
 
 func TestToDanniToken_ProjectPermission(t *testing.T) {

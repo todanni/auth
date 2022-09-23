@@ -30,7 +30,8 @@ func (t *ToDanniToken) Validate(token string) error {
 
 	parsed, err := jwt.Parse([]byte(token),
 		jwt.WithKeySet(keySet),
-		jwt.WithValidate(true))
+		jwt.WithValidate(true),
+		jwt.WithTypedClaim("user-info", models.UserInfo{}))
 
 	if err != nil {
 		return err

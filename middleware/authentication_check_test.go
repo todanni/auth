@@ -8,7 +8,6 @@ import (
 	"github.com/lestrrat-go/jwx/jwk"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"gorm.io/gorm"
 
 	"github.com/todanni/auth/models"
 	"github.com/todanni/auth/test"
@@ -34,8 +33,8 @@ func (s *AuthenticationCheckTestSuite) Test_AuthenticationCheck_Bad_NoCookie401(
 
 	handler.ServeHTTP(rw, req)
 
-	require.Equal(s.T(), rw.Code, 401)
-	require.Equal(s.T(), rw.Body.String(), "unauthorised\n")
+	require.Equal(s.T(), 401, rw.Code)
+	require.Equal(s.T(), "unauthorised\n", rw.Body.String())
 }
 
 func (s *AuthenticationCheckTestSuite) Test_AuthenticationCheck_Bad_InvalidToken403() {
@@ -52,29 +51,22 @@ func (s *AuthenticationCheckTestSuite) Test_AuthenticationCheck_Bad_InvalidToken
 
 	handler.ServeHTTP(rw, req)
 
-	require.Equal(s.T(), rw.Code, 403)
-	require.Equal(s.T(), rw.Body.String(), "invalid token\n")
+	require.Equal(s.T(), 403, rw.Code)
+	require.Equal(s.T(), "invalid token\n", rw.Body.String())
 }
 
 func (s *AuthenticationCheckTestSuite) Test_AuthenticationCheck_Good() {
-	user := models.User{
-		Model: gorm.Model{
-			ID: 1,
-		},
+	user := models.UserInfo{
+		UserID:     1,
 		Email:      "test@test.com",
 		ProfilePic: "",
 	}
 
 	dashboards := make([]models.Dashboard, 0)
 	projects := make([]models.Project, 0)
-	userInfo := models.UserInfo{
-		Email:      user.Email,
-		ProfilePic: user.ProfilePic,
-		UserID:     user.ID,
-	}
 
 	todanniToken := token.NewAccessToken()
-	todanniToken.SetUserInfo(userInfo).
+	todanniToken.SetUserInfo(user).
 		SetProjectsPermissions(projects).
 		SetDashboardPermissions(dashboards)
 
@@ -82,9 +74,12 @@ func (s *AuthenticationCheckTestSuite) Test_AuthenticationCheck_Good() {
 	require.NoError(s.T(), err)
 
 	handler := NewAuthenticationCheck(func(w http.ResponseWriter, r *http.Request) {
-		userInfo := r.Context().Value(UserInfoContextKey).(models.UserInfo)
-		if userInfo.UserID != user.ID {
-			s.T().Errorf("user info incorrect, expected %v but got %v", user.ID, userInfo.UserID)
+		accessToken := r.Context().Value(AccessTokenContextKey).(*token.ToDanniToken)
+		require.NotNil(s.T(), accessToken)
+		userInfo, err := accessToken.GetUserInfo()
+		require.NoError(s.T(), err)
+		if userInfo.UserID != user.UserID {
+			s.T().Errorf("user info incorrect, expected %v but got %v", user.UserID, userInfo.UserID)
 		}
 	})
 
@@ -99,7 +94,7 @@ func (s *AuthenticationCheckTestSuite) Test_AuthenticationCheck_Good() {
 
 	handler.ServeHTTP(rw, req)
 
-	require.Equal(s.T(), rw.Code, 200)
+	require.Equal(s.T(), 200, rw.Code)
 }
 
 func TestAuthenticationCheckTestSuite(t *testing.T) {
