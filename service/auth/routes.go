@@ -22,5 +22,5 @@ func (s *authService) routes() {
 	s.router.HandleFunc(PublicKeyHandler, s.ServePublicKey).Methods(http.MethodGet)
 
 	// only UserInfoHandler requires auth
-	s.router.Handle(UserInfoHandler, middleware.NewAuthenticationCheck(s.UserInfoHandler)).Methods(http.MethodGet)
+	s.router.Handle(UserInfoHandler, middleware.NewAuthenticationMiddleware(s.UserInfoHandler)).Methods(http.MethodGet)
 }

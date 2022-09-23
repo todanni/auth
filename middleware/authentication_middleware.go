@@ -14,11 +14,11 @@ const (
 	AccessTokenContextKey ContextKey = "accessToken"
 )
 
-type AuthenticationCheck struct {
+type AuthenticationMiddleware struct {
 	handler http.HandlerFunc
 }
 
-func (ea *AuthenticationCheck) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (m *AuthenticationMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Check if cookie is set
 	accessTokenCookie, err := r.Cookie(token.AccessTokenCookieName)
 	if err != nil {
@@ -41,9 +41,9 @@ func (ea *AuthenticationCheck) ServeHTTP(w http.ResponseWriter, r *http.Request)
 	}
 
 	ctx := context.WithValue(r.Context(), AccessTokenContextKey, accessToken)
-	ea.handler(w, r.WithContext(ctx))
+	m.handler(w, r.WithContext(ctx))
 }
 
-func NewAuthenticationCheck(handlerToWrap http.HandlerFunc) *AuthenticationCheck {
-	return &AuthenticationCheck{handlerToWrap}
+func NewAuthenticationMiddleware(handlerToWrap http.HandlerFunc) *AuthenticationMiddleware {
+	return &AuthenticationMiddleware{handlerToWrap}
 }

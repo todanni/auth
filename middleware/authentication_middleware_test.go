@@ -26,7 +26,7 @@ func (s *AuthenticationCheckTestSuite) SetupSuite() {
 }
 
 func (s *AuthenticationCheckTestSuite) Test_AuthenticationCheck_Bad_NoCookie401() {
-	handler := NewAuthenticationCheck(dummyHandler)
+	handler := NewAuthenticationMiddleware(dummyHandler)
 
 	rw := httptest.NewRecorder()
 	req, _ := http.NewRequest(http.MethodGet, "/", nil)
@@ -38,7 +38,7 @@ func (s *AuthenticationCheckTestSuite) Test_AuthenticationCheck_Bad_NoCookie401(
 }
 
 func (s *AuthenticationCheckTestSuite) Test_AuthenticationCheck_Bad_InvalidToken403() {
-	handler := NewAuthenticationCheck(dummyHandler)
+	handler := NewAuthenticationMiddleware(dummyHandler)
 
 	rw := httptest.NewRecorder()
 	req, _ := http.NewRequest(http.MethodGet, "/", nil)
@@ -73,7 +73,7 @@ func (s *AuthenticationCheckTestSuite) Test_AuthenticationCheck_Good() {
 	signedToken, err := todanniToken.SignedToken(s.privateKey)
 	require.NoError(s.T(), err)
 
-	handler := NewAuthenticationCheck(func(w http.ResponseWriter, r *http.Request) {
+	handler := NewAuthenticationMiddleware(func(w http.ResponseWriter, r *http.Request) {
 		accessToken := r.Context().Value(AccessTokenContextKey).(*token.ToDanniToken)
 		require.NotNil(s.T(), accessToken)
 		userInfo, err := accessToken.GetUserInfo()
