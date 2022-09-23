@@ -19,6 +19,8 @@ const (
 	ToDanniCertsUrl            = "http://localhost:8083/auth/public-key"
 	ToDanniTokenIssuer         = "todanni.com"
 	RefreshTokenExpirationTime = time.Hour * 60 * 30
+	AccessTokenCookieName  = "todanni-access-token"
+	RefreshTokenCookieName = "todanni-refresh-token"
 )
 
 var (

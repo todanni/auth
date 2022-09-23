@@ -7,9 +7,9 @@ import (
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/todanni/auth/middleware"
 	"github.com/todanni/auth/models"
 	"github.com/todanni/auth/storage"
-	"github.com/todanni/auth/token"
 )
 
 type DashboardService interface {
@@ -20,10 +20,6 @@ type DashboardService interface {
 	RejectDashboardInviteHandler(w http.ResponseWriter, r *http.Request)
 	DeleteDashboardHandler(w http.ResponseWriter, r *http.Request)
 }
-
-const (
-	AccessTokenCookieName = "todanni-access-token"
-)
 
 func NewDashboardService(dashboardStorage storage.DashboardStorage, userStorage storage.UserStorage, router *mux.Router) DashboardService {
 	server := &dashboardService{
@@ -42,21 +38,8 @@ type dashboardService struct {
 }
 
 func (s *dashboardService) ListDashboardsHandler(w http.ResponseWriter, r *http.Request) {
-	// Check if cookie is set
-	accessTokenCookie, err := r.Cookie(AccessTokenCookieName)
-	if err != nil {
-		http.Error(w, "unauthorised", http.StatusUnauthorized)
-		return
-	}
-
-	// Validate JWT token and get the user ID
-	userInfo, err := token.ValidateToDanniToken(accessTokenCookie.Value)
-	if err != nil {
-		log.Error(err)
-		http.Error(w, "unauthorised", http.StatusUnauthorized)
-		return
-	}
-
+	userInfo := r.Context().Value(middleware.UserInfoContextKey).(models.UserInfo)
+	
 	dashboards, err := s.dashboardStorage.List(userInfo.UserID)
 	if err != nil {
 		log.Error(err)
@@ -93,24 +76,11 @@ func (s *dashboardService) ListDashboardsHandler(w http.ResponseWriter, r *http.
 }
 
 func (s *dashboardService) CreateDashboardHandler(w http.ResponseWriter, r *http.Request) {
-	// Check if cookie is set
-	accessTokenCookie, err := r.Cookie(AccessTokenCookieName)
-	if err != nil {
-		http.Error(w, "unauthorised", http.StatusUnauthorized)
-		return
-	}
-
-	// Validate JWT token and get the user ID
-	userInfo, err := token.ValidateToDanniToken(accessTokenCookie.Value)
-	if err != nil {
-		log.Error(err)
-		http.Error(w, "unauthorised", http.StatusUnauthorized)
-		return
-	}
+	userInfo := r.Context().Value(middleware.UserInfoContextKey).(models.UserInfo)
 
 	// Parse the body of the request to get the email of the invited user
 	var requestBody models.DashboardCreateRequest
-	err = json.NewDecoder(r.Body).Decode(&requestBody)
+	err := json.NewDecoder(r.Body).Decode(&requestBody)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
