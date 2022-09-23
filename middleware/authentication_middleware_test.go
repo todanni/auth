@@ -27,7 +27,7 @@ func (s *AuthenticationCheckTestSuite) SetupSuite() {
 }
 
 func (s *AuthenticationCheckTestSuite) Test_AuthenticationCheck_Bad_NoCookie401() {
-	handler := NewAuthenticationCheck(dummyHandler)
+	handler := NewAuthenticationMiddleware(dummyHandler)
 
 	rw := httptest.NewRecorder()
 	req, _ := http.NewRequest(http.MethodGet, "/", nil)
@@ -39,7 +39,7 @@ func (s *AuthenticationCheckTestSuite) Test_AuthenticationCheck_Bad_NoCookie401(
 }
 
 func (s *AuthenticationCheckTestSuite) Test_AuthenticationCheck_Bad_InvalidToken403() {
-	handler := NewAuthenticationCheck(dummyHandler)
+	handler := NewAuthenticationMiddleware(dummyHandler)
 
 	rw := httptest.NewRecorder()
 	req, _ := http.NewRequest(http.MethodGet, "/", nil)
@@ -81,8 +81,8 @@ func (s *AuthenticationCheckTestSuite) Test_AuthenticationCheck_Good() {
 	signedToken, err := todanniToken.SignedToken(s.privateKey)
 	require.NoError(s.T(), err)
 
-	handler := NewAuthenticationCheck(func(w http.ResponseWriter, r *http.Request) {
-		userInfo := r.Context().Value(UserInfoContextKey).(models.UserInfo)
+	handler := NewAuthenticationMiddleware(func(w http.ResponseWriter, r *http.Request) {
+		userInfo := r.Context().Value(AccessTokenContextKey).(models.UserInfo)
 		if userInfo.UserID != user.ID {
 			s.T().Errorf("user info incorrect, expected %v but got %v", user.ID, userInfo.UserID)
 		}
