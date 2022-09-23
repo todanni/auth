@@ -6,8 +6,8 @@ import (
 
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
+	"github.com/todanni/token"
 
-	"github.com/todanni/auth/middleware"
 	"github.com/todanni/auth/models"
 	"github.com/todanni/auth/storage"
 )
@@ -38,8 +38,8 @@ type dashboardService struct {
 }
 
 func (s *dashboardService) ListDashboardsHandler(w http.ResponseWriter, r *http.Request) {
-	userInfo := r.Context().Value(middleware.UserInfoContextKey).(models.UserInfo)
-	
+	userInfo := r.Context().Value(token.UserInfoContextKey).(models.UserInfo)
+
 	dashboards, err := s.dashboardStorage.List(userInfo.UserID)
 	if err != nil {
 		log.Error(err)
@@ -76,7 +76,7 @@ func (s *dashboardService) ListDashboardsHandler(w http.ResponseWriter, r *http.
 }
 
 func (s *dashboardService) CreateDashboardHandler(w http.ResponseWriter, r *http.Request) {
-	userInfo := r.Context().Value(middleware.UserInfoContextKey).(models.UserInfo)
+	userInfo := r.Context().Value(token.UserInfoContextKey).(models.UserInfo)
 
 	// Parse the body of the request to get the email of the invited user
 	var requestBody models.DashboardCreateRequest

@@ -3,7 +3,7 @@ package auth
 import (
 	"net/http"
 
-	"github.com/todanni/auth/middleware"
+	"github.com/todanni/token"
 )
 
 const (
@@ -22,5 +22,5 @@ func (s *authService) routes() {
 	s.router.HandleFunc(PublicKeyHandler, s.ServePublicKey).Methods(http.MethodGet)
 
 	// only UserInfoHandler requires auth
-	s.router.Handle(UserInfoHandler, middleware.NewAuthenticationMiddleware(s.UserInfoHandler)).Methods(http.MethodGet)
+	s.router.Handle(UserInfoHandler, token.NewAuthenticationMiddleware(s.UserInfoHandler)).Methods(http.MethodGet)
 }

@@ -524,8 +524,8 @@ github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO
 github.com/syndtr/gocapability v0.0.0-20200815063812-42c35b437635/go.mod h1:hkRG7XYTFWNJGYcbNJQlaLq0fg1yr4J4t/NcTQtrfww=
 github.com/thanhpk/randstr v1.0.4 h1:IN78qu/bR+My+gHCvMEXhR/i5oriVHcTB/BJJIRTsNo=
 github.com/thanhpk/randstr v1.0.4/go.mod h1:M/H2P1eNLZzlDwAzpkkkUvoyNNMbzRGhESZuEQk3r0U=
-github.com/todanni/token v1.0.0 h1:R9rOW+Y2j0/Hd3NDQyv05tIbF6cN8O/zZUOrIyfXuTE=
-github.com/todanni/token v1.0.0/go.mod h1:vhjn+cv4kd2YpN3khQ03s+Ym5yhcoDuVyCRSdhhlCjE=
+github.com/todanni/token v1.0.2 h1:CnpmIIVY2stvjzSVNr4MH9KOcVfAv3YvaEUSSkIiKb4=
+github.com/todanni/token v1.0.2/go.mod h1:wjqiw/0NqkbeEATO22Cb8X6sae2N1pHYZf1XGKr+1y4=
 github.com/tv42/httpunix v0.0.0-20150427012821-b75d8614f926/go.mod h1:9ESjWnEqriFuLhtthL60Sar/7RFoluCcXsuvEwTV5KM=
 github.com/urfave/cli v1.22.1/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=
 github.com/vishvananda/netlink v1.1.0/go.mod h1:cTgwzPIzzgDAYoQrMm0EdrjRUBkTqKYppBueQtXaqoE=
