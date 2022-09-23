@@ -84,24 +84,24 @@ func (t *ToDanniToken) SetUserInfo(userInfo models.UserInfo) *ToDanniToken {
 	return t.setClaim("user-info", userInfo)
 }
 
-func (t *ToDanniToken) SetDashboardPermissions(dashboards []models.Dashboard) {
+func (t *ToDanniToken) SetDashboardPermissions(dashboards []models.Dashboard) *ToDanniToken {
 	userDashboardIDs := make([]uint, 0)
 
 	for _, dashboard := range dashboards {
 		userDashboardIDs = append(userDashboardIDs, dashboard.ID)
 	}
 
-	t.setClaim("dashboards", userDashboardIDs)
+	return t.setClaim("dashboards", userDashboardIDs)
 }
 
-func (t *ToDanniToken) SetProjectsPermissions(projects []models.Project) {
+func (t *ToDanniToken) SetProjectsPermissions(projects []models.Project) *ToDanniToken {
 	userProjectIDs := make([]uint, 0)
 
 	for _, project := range projects {
 		userProjectIDs = append(userProjectIDs, project.ID)
 	}
 
-	t.setClaim("projects", userProjectIDs)
+	return t.setClaim("projects", userProjectIDs)
 }
 
 func (t *ToDanniToken) setClaim(name string, value interface{}) *ToDanniToken {

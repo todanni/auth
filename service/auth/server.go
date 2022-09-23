@@ -74,7 +74,7 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if user exists
-	result, err := s.userStorage.GetUser(email)
+	userRecord, err := s.userStorage.GetUser(email)
 	if err != nil {
 		log.Errorf("Couldn't check if user exists: %v", err)
 		http.Error(w, "some error with user", http.StatusInternalServerError)
@@ -82,8 +82,8 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// User doesn't exist, we have to create it
-	if result.ID == 0 {
-		result, err = s.userStorage.CreateUser(email, "google", "https://www.dictionary.com/e/wp-content/uploads/2018/03/rickrolling-300x300.jpg")
+	if userRecord.ID == 0 {
+		userRecord, err = s.userStorage.CreateUser(email, "google", "https://www.dictionary.com/e/wp-content/uploads/2018/03/rickrolling-300x300.jpg")
 		if err != nil {
 			log.Errorf("Couldn't create user: %v", err)
 			http.Error(w, "couldn't create new user", http.StatusInternalServerError)
@@ -91,37 +91,46 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	userInfo := models.UserInfo{
+		Email:      userRecord.Email,
+		ProfilePic: userRecord.ProfilePic,
+		UserID:     userRecord.ID,
+	}
 	dashboards := make([]models.Dashboard, 0)
 	projects := make([]models.Project, 0)
 
-	if result.ID != 0 {
-		dashboards, err = s.dashboardStorage.List(result.ID)
+	if userRecord.ID != 0 {
+		dashboards, err = s.dashboardStorage.List(userRecord.ID)
 		if err != nil {
 			log.Error("couldn't look up user dashboards")
 		}
 
-		projects, err = s.projectStorage.List(result.ID)
+		projects, err = s.projectStorage.List(userRecord.ID)
 		if err != nil {
 			log.Error("couldn't look up user dashboards")
 		}
 	}
 
-	accessToken, err := token.IssueToDanniToken(result, s.config.PrivateJWK, dashboards, projects)
+	todanniToken := token.New()
+	todanniToken.SetUserInfo(userInfo).
+		SetProjectsPermissions(projects).
+		SetDashboardPermissions(dashboards)
+
+	signedToken, err := todanniToken.SignedToken(s.config.PrivateJWK)
 	if err != nil {
-		log.Errorf("Couldn't issue todanni token: %v", err)
+		log.Errorf("Couldn't sign todanni token: %v", err)
 		http.Error(w, "couldn't create the ToDanni token", http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
 	// Set access and refresh token cookies
 	http.SetCookie(w, &http.Cookie{
 		Name:     token.AccessTokenCookieName,
-		Value:    accessToken,
+		Value:    signedToken,
 		Path:     "/",
 		HttpOnly: true,
 	})
-	refreshToken, err := token.IssueToDanniRefreshToken(int(result.ID))
+	refreshToken, err := token.IssueToDanniRefreshToken(int(userRecord.ID))
 	// TODO: Save the token in the DB
 	http.SetCookie(w, &http.Cookie{
 		Name:     token.RefreshTokenCookieName,
@@ -129,6 +138,7 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		HttpOnly: true,
 	})
+	w.Header().Set("Content-Type", "application/json")
 	http.Redirect(w, r, "/tasks", http.StatusFound)
 }
 
