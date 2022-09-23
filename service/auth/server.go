@@ -16,7 +16,6 @@ import (
 	"golang.org/x/oauth2"
 
 	"github.com/todanni/auth/config"
-	"github.com/todanni/auth/middleware"
 	"github.com/todanni/auth/models"
 	"github.com/todanni/auth/storage"
 )
@@ -201,7 +200,7 @@ func (s *authService) ServePublicKey(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *authService) UserInfoHandler(w http.ResponseWriter, r *http.Request) {
-	accessToken := r.Context().Value(middleware.AccessTokenContextKey).(*token.ToDanniToken)
+	accessToken := r.Context().Value(token.AccessTokenContextKey).(*token.ToDanniToken)
 	log.Info(accessToken)
 
 	userInfo, err := accessToken.GetUserInfo()
