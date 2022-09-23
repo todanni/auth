@@ -1,6 +1,7 @@
 package token
 
 import (
+	"context"
 	"errors"
 	"time"
 
@@ -29,7 +30,12 @@ func New() *ToDanniToken {
 	return &ToDanniToken{token: t}
 }
 
-func (t *ToDanniToken) Validate(token string, keySet jwk.Set) error {
+func (t *ToDanniToken) Validate(token string) error {
+	// TODO: move this later
+	autoRefresh := jwk.NewAutoRefresh(context.Background())
+	autoRefresh.Configure(ToDanniCertsUrl, jwk.WithMinRefreshInterval(time.Hour*1))
+	keySet, err := autoRefresh.Fetch(context.Background(), ToDanniCertsUrl)
+
 	parsed, err := jwt.Parse([]byte(token),
 		jwt.WithKeySet(keySet),
 		jwt.WithValidate(true))

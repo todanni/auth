@@ -10,7 +10,8 @@ import (
 type ContextKey string
 
 const (
-	UserInfoContextKey ContextKey = "userInfo"
+	UserInfoContextKey    ContextKey = "userInfo"
+	AccessTokenContextKey ContextKey = "accessToken"
 )
 
 type AuthenticationCheck struct {
@@ -25,7 +26,9 @@ func (ea *AuthenticationCheck) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	userInfo, err := token.ValidateToDanniToken(accessTokenCookie.Value)
+	accessToken := token.New()
+	err = accessToken.Validate(accessTokenCookie.Value)
+
 	switch err {
 	case token.MissingFieldError:
 		http.Error(w, "unauthorised", http.StatusUnauthorized)
@@ -37,8 +40,7 @@ func (ea *AuthenticationCheck) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	ctx := context.WithValue(r.Context(), UserInfoContextKey, userInfo)
-
+	ctx := context.WithValue(r.Context(), AccessTokenContextKey, accessToken)
 	ea.handler(w, r.WithContext(ctx))
 }
 

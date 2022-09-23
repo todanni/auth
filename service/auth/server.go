@@ -185,7 +185,14 @@ func (s *authService) ServePublicKey(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *authService) UserInfoHandler(w http.ResponseWriter, r *http.Request) {
-	userInfo := r.Context().Value(middleware.UserInfoContextKey).(models.UserInfo)
+	accessToken := r.Context().Value(middleware.AccessTokenContextKey).(token.ToDanniToken)
+	log.Info(accessToken)
+
+	userInfo, err := accessToken.GetUserInfo()
+	if err != nil {
+		http.Error(w, "token didn't contain user info", http.StatusBadRequest)
+	}
+
 	marshalled, err := json.Marshal(userInfo)
 	if err != nil {
 		http.Error(w, "couldn't marshal token", http.StatusInternalServerError)
