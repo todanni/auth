@@ -8,6 +8,7 @@ import (
 	"github.com/lestrrat-go/jwx/jwk"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+	"github.com/todanni/token"
 
 	"github.com/todanni/auth/models"
 	"github.com/todanni/auth/test"

@@ -49,7 +49,7 @@ func main() {
 	}
 
 	// Perform migrations
-	err = db.AutoMigrate(&models.User{}, &models.RefreshToken{}, &models.Dashboard{}, &models.Project{})
+	err = db.AutoMigrate(&models.User{}, &models.Dashboard{}, &models.Project{})
 	if err != nil {
 		log.Fatalf("couldn't auto migrate: %v", err)
 	}
