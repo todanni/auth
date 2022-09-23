@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	"github.com/lestrrat-go/jwx/jwa"
 	"github.com/lestrrat-go/jwx/jwk"
 	"github.com/ory/dockertest/v3"
@@ -42,8 +43,9 @@ func ServePublicKey() jwk.Key {
 		w.Write(buf)
 	})
 
-	http.Handle("/auth/public-key", handler)
-	go http.ListenAndServe("localhost:8083", nil)
+	r := mux.NewRouter()
+	r.Handle("/auth/public-key", handler)
+	go http.ListenAndServe("localhost:8083", r)
 
 	return privateJWK
 }
