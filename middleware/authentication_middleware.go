@@ -2,12 +2,17 @@ package middleware
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
-	"github.com/todanni/auth/token"
+	"github.com/todanni/token"
 )
 
 type ContextKey string
+
+var (
+	MissingFieldError = errors.New("missing field in token")
+)
 
 const (
 	UserInfoContextKey    ContextKey = "userInfo"
@@ -30,13 +35,13 @@ func (m *AuthenticationMiddleware) ServeHTTP(w http.ResponseWriter, r *http.Requ
 	err = accessToken.Validate(accessTokenCookie.Value)
 
 	switch err {
-	case token.MissingFieldError:
+	case MissingFieldError:
 		http.Error(w, "unauthorised", http.StatusUnauthorized)
 		return
 	case nil:
 		break
 	default:
-		http.Error(w, "invalid token", http.StatusForbidden)
+		http.Error(w, "invalid keys", http.StatusForbidden)
 		return
 	}
 

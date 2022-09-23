@@ -3,19 +3,22 @@ package auth
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/lestrrat-go/jwx/jwk"
+	"github.com/lestrrat-go/jwx/jwt"
 	"github.com/openshift/osin"
 	log "github.com/sirupsen/logrus"
+	"github.com/todanni/token"
 	"golang.org/x/oauth2"
 
 	"github.com/todanni/auth/config"
 	"github.com/todanni/auth/middleware"
 	"github.com/todanni/auth/models"
 	"github.com/todanni/auth/storage"
-	"github.com/todanni/auth/token"
 )
 
 type AuthService interface {
@@ -58,18 +61,18 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 
 	tok, err := s.oauthConfig.Exchange(ctx, code)
 	if err != nil {
-		log.Errorf("Couldn't exchange token: %v", err)
-		http.Error(w, "couldn't exchange token for code", http.StatusInternalServerError)
+		log.Errorf("Couldn't exchange keys: %v", err)
+		http.Error(w, "couldn't exchange keys for code", http.StatusInternalServerError)
 		return
 	}
 
 	idToken := tok.Extra("id_token").(string)
 	log.Info(idToken)
 
-	email, err := token.ValidateGoogleToken(ctx, idToken)
+	email, err := s.validateGoogleToken(ctx, idToken)
 	if err != nil {
-		log.Errorf("Couldn't validate token: %v", err)
-		http.Error(w, "invalid Google token", http.StatusBadRequest)
+		log.Errorf("Couldn't validate keys: %v", err)
+		http.Error(w, "invalid Google keys", http.StatusBadRequest)
 		return
 	}
 
@@ -118,12 +121,12 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 
 	signedToken, err := todanniToken.SignedToken(s.config.PrivateJWK)
 	if err != nil {
-		log.Errorf("Couldn't sign todanni token: %v", err)
-		http.Error(w, "couldn't create the ToDanni token", http.StatusInternalServerError)
+		log.Errorf("Couldn't sign todanni keys: %v", err)
+		http.Error(w, "couldn't create the ToDanni keys", http.StatusInternalServerError)
 		return
 	}
 
-	// Set access and refresh token cookies
+	// Set access and refresh keys cookies
 	http.SetCookie(w, &http.Cookie{
 		Name:     token.AccessTokenCookieName,
 		Value:    signedToken,
@@ -131,10 +134,10 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 	})
 
-	// TODO: Generate and persist a refresh token
+	// TODO: Generate and persist a refresh keys
 	http.SetCookie(w, &http.Cookie{
 		Name:     token.RefreshTokenCookieName,
-		Value:    "madeup-token-todo",
+		Value:    "madeup-keys-todo",
 		Path:     "/",
 		HttpOnly: true,
 	})
@@ -143,7 +146,7 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *authService) RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
-	//TODO: Check that the provided refresh token is valid by querying the database
+	//TODO: Check that the provided refresh keys is valid by querying the database
 	var user models.User
 
 	dashboards, err := s.dashboardStorage.List(user.ID)
@@ -169,8 +172,8 @@ func (s *authService) RefreshTokenHandler(w http.ResponseWriter, r *http.Request
 
 	signedToken, err := todanniToken.SignedToken(s.config.PrivateJWK)
 	if err != nil {
-		log.Errorf("Couldn't sign todanni token: %v", err)
-		http.Error(w, "couldn't create the ToDanni token", http.StatusInternalServerError)
+		log.Errorf("Couldn't sign todanni keys: %v", err)
+		http.Error(w, "couldn't create the ToDanni keys", http.StatusInternalServerError)
 		return
 	}
 
@@ -203,12 +206,12 @@ func (s *authService) UserInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 	userInfo, err := accessToken.GetUserInfo()
 	if err != nil {
-		http.Error(w, "token didn't contain user info", http.StatusBadRequest)
+		http.Error(w, "keys didn't contain user info", http.StatusBadRequest)
 	}
 
 	marshalled, err := json.Marshal(userInfo)
 	if err != nil {
-		http.Error(w, "couldn't marshal token", http.StatusInternalServerError)
+		http.Error(w, "couldn't marshal keys", http.StatusInternalServerError)
 		return
 	}
 
@@ -218,4 +221,26 @@ func (s *authService) UserInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 func (s *authService) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "Unimplemented", http.StatusMethodNotAllowed)
+}
+
+func (s *authService) validateGoogleToken(ctx context.Context, tkn string) (string, error) {
+	autoRefresh := jwk.NewAutoRefresh(ctx)
+	autoRefresh.Configure("https://www.googleapis.com/oauth2/v3/certs", jwk.WithMinRefreshInterval(time.Hour*1))
+
+	keySet, err := autoRefresh.Fetch(ctx, "https://www.googleapis.com/oauth2/v3/certs")
+	if err != nil {
+		return "", err
+	}
+
+	parsed, err := jwt.Parse([]byte(tkn), jwt.WithKeySet(keySet), jwt.WithValidate(true))
+	if err != nil {
+		return "", err
+	}
+
+	email, ok := parsed.Get("email")
+	if !ok {
+		return "", errors.New("couldn't find email in keys")
+	}
+
+	return email.(string), nil
 }

@@ -125,7 +125,7 @@ func (s OAuthStorage) SaveAccess(data *osin.AccessData) (err error) {
 	return nil
 }
 
-// LoadAccess retrieves access data by token. Client information MUST be loaded together.
+// LoadAccess retrieves access data by keys. Client information MUST be loaded together.
 // AuthorizeData and AccessData DON'T NEED to be loaded if not easily available.
 // Optionally can return error if expired.
 func (s OAuthStorage) LoadAccess(code string) (*osin.AccessData, error) {
@@ -141,7 +141,7 @@ func (s OAuthStorage) RemoveAccess(code string) (err error) {
 // AuthorizeData and AccessData DON'T NEED to be loaded if not easily available.
 // Optionally can return error if expired.
 func (s OAuthStorage) LoadRefresh(code string) (*osin.AccessData, error) {
-	row := s.db.QueryRow("SELECT access FROM refresh WHERE token=$1 LIMIT 1", code)
+	row := s.db.QueryRow("SELECT access FROM refresh WHERE keys=$1 LIMIT 1", code)
 	var access string
 	if err := row.Scan(&access); err == sql.ErrNoRows {
 		return nil, errors.New(err.Error())
@@ -153,7 +153,7 @@ func (s OAuthStorage) LoadRefresh(code string) (*osin.AccessData, error) {
 
 // RemoveRefresh revokes or deletes refresh AccessData.
 func (s OAuthStorage) RemoveRefresh(code string) error {
-	_, err := s.db.Exec("DELETE FROM refresh WHERE token=$1", code)
+	_, err := s.db.Exec("DELETE FROM refresh WHERE keys=$1", code)
 	if err != nil {
 		return errors.New(err.Error())
 	}

@@ -8,7 +8,7 @@ import (
 	"github.com/lestrrat-go/jwx/jwa"
 	"github.com/lestrrat-go/jwx/jwk"
 
-	"github.com/todanni/auth/token"
+	"github.com/todanni/auth/keys"
 )
 
 // Config contains the env variables needed to run the servers
@@ -31,7 +31,7 @@ func NewFromEnv(vault *vault.Client) (Config, error) {
 		return Config{}, err
 	}
 
-	privateKey, err := token.GetSigningKey(context.Background(), vault, config.PrivateKeyID)
+	privateKey, err := keys.GetSigningKey(context.Background(), vault, config.PrivateKeyID)
 	if err != nil {
 		return Config{}, err
 	}

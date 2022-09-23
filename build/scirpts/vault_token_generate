@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # When we create a new repository for the first time,
-# we need to make sure that it has its own Vault token used in the GitHub actions
+# we need to make sure that it has its own Vault keys used in the GitHub actions
 # to access any secrets that need to be inserted at runtime
 
 # Create policy file
@@ -15,15 +15,15 @@ EOF
 # Write policy
 vault policy write ci-"${REPOSITORY_NAME}" ci-policy.hcl
 
-# Create token and associate with policy
-CI_TOKEN=$(vault token create -policy="ci-${REPOSITORY_NAME}" -field=token)
+# Create keys and associate with policy
+CI_TOKEN=$(vault keys create -policy="ci-${REPOSITORY_NAME}" -field=keys)
 
 # Test that it works
 VAULT_ADDR='https://vault.todanni.com' VAULT_TOKEN=$CI_TOKEN vault kv get -format yaml -field data  ci/"${REPOSITORY_NAME}"
 
 # TODO: Get the repository ID to use in the write secret request
 
-# TODO: Encrypt the token
+# TODO: Encrypt the keys
 ENCRYPTED_TOKEN=CI_TOKEN
 
 # Write the secret to GitHub organisation secrets

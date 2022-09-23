@@ -14,5 +14,3 @@
 .idea/
 
 .env*.local
-/backup_id_rsa
-/backup_id_rsa.pub

@@ -11,7 +11,6 @@ import (
 
 	"github.com/todanni/auth/models"
 	"github.com/todanni/auth/test"
-	"github.com/todanni/auth/token"
 )
 
 type AuthenticationCheckTestSuite struct {
@@ -43,8 +42,8 @@ func (s *AuthenticationCheckTestSuite) Test_AuthenticationCheck_Bad_InvalidToken
 	rw := httptest.NewRecorder()
 	req, _ := http.NewRequest(http.MethodGet, "/", nil)
 	cookie := &http.Cookie{
-		Name:   "todanni-access-token",
-		Value:  "token",
+		Name:   "todanni-access-keys",
+		Value:  "keys",
 		MaxAge: 300,
 	}
 	req.AddCookie(cookie)
@@ -52,7 +51,7 @@ func (s *AuthenticationCheckTestSuite) Test_AuthenticationCheck_Bad_InvalidToken
 	handler.ServeHTTP(rw, req)
 
 	require.Equal(s.T(), 403, rw.Code)
-	require.Equal(s.T(), "invalid token\n", rw.Body.String())
+	require.Equal(s.T(), "invalid keys\n", rw.Body.String())
 }
 
 func (s *AuthenticationCheckTestSuite) Test_AuthenticationCheck_Good() {
@@ -86,7 +85,7 @@ func (s *AuthenticationCheckTestSuite) Test_AuthenticationCheck_Good() {
 	rw := httptest.NewRecorder()
 	req, _ := http.NewRequest(http.MethodGet, "/", nil)
 	cookie := &http.Cookie{
-		Name:   "todanni-access-token",
+		Name:   "todanni-access-keys",
 		Value:  signedToken,
 		MaxAge: 300,
 	}
