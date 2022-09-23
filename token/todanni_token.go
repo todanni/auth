@@ -17,15 +17,7 @@ type ToDanniToken struct {
 	token jwt.Token
 }
 
-func NewToDanniToken() (*ToDanniToken, error) {
-	t, err := jwt.NewBuilder().Issuer(ToDanniTokenIssuer).IssuedAt(time.Now()).Build()
-	if err != nil {
-		return nil, err
-	}
-	return &ToDanniToken{token: t}, nil
-}
-
-func New() *ToDanniToken {
+func NewAccessToken() *ToDanniToken {
 	t, _ := jwt.NewBuilder().Issuer(ToDanniTokenIssuer).IssuedAt(time.Now()).Build()
 	return &ToDanniToken{token: t}
 }
@@ -57,23 +49,23 @@ func (t *ToDanniToken) SignedToken(privateKey jwk.Key) (string, error) {
 	return string(signedJWT), nil
 }
 
-func (t *ToDanniToken) HasDashboardPermission(dashboard string) bool {
+func (t *ToDanniToken) HasDashboardPermission(dashboard uint) bool {
 	dashboardsPermissions, ok := t.token.Get("dashboards")
 	if !ok {
 		return false
 	}
 
-	dashboardsPermissionsArray := dashboardsPermissions.([]string)
+	dashboardsPermissionsArray := dashboardsPermissions.([]uint)
 	return slices.Contains(dashboardsPermissionsArray, dashboard)
 }
 
-func (t *ToDanniToken) HasProjectPermission(project string) bool {
+func (t *ToDanniToken) HasProjectPermission(project uint) bool {
 	projectPermissions, ok := t.token.Get("projects")
 	if !ok {
 		return false
 	}
 
-	dashboardsPermissionsArray := projectPermissions.([]string)
+	dashboardsPermissionsArray := projectPermissions.([]uint)
 	return slices.Contains(dashboardsPermissionsArray, project)
 }
 

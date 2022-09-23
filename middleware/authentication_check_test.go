@@ -8,21 +8,22 @@ import (
 	"github.com/lestrrat-go/jwx/jwk"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+	"gorm.io/gorm"
+
 	"github.com/todanni/auth/models"
 	"github.com/todanni/auth/test"
 	"github.com/todanni/auth/token"
-	"gorm.io/gorm"
 )
 
 type AuthenticationCheckTestSuite struct {
 	suite.Suite
-	key jwk.Key
+	privateKey jwk.Key
 }
 
 func dummyHandler(w http.ResponseWriter, r *http.Request) {}
 
 func (s *AuthenticationCheckTestSuite) SetupSuite() {
-	s.key = test.ServePublicKey()
+	s.privateKey = test.ServePublicKey()
 }
 
 func (s *AuthenticationCheckTestSuite) Test_AuthenticationCheck_Bad_NoCookie401() {
@@ -66,8 +67,20 @@ func (s *AuthenticationCheckTestSuite) Test_AuthenticationCheck_Good() {
 
 	dashboards := make([]models.Dashboard, 0)
 	projects := make([]models.Project, 0)
+	userInfo := models.UserInfo{
+		Email:      user.Email,
+		ProfilePic: user.ProfilePic,
+		UserID:     user.ID,
+	}
 
-	token, _ := token.IssueToDanniToken(user, s.key, dashboards, projects)
+	todanniToken := token.NewAccessToken()
+	todanniToken.SetUserInfo(userInfo).
+		SetProjectsPermissions(projects).
+		SetDashboardPermissions(dashboards)
+
+	signedToken, err := todanniToken.SignedToken(s.privateKey)
+	require.NoError(s.T(), err)
+
 	handler := NewAuthenticationCheck(func(w http.ResponseWriter, r *http.Request) {
 		userInfo := r.Context().Value(UserInfoContextKey).(models.UserInfo)
 		if userInfo.UserID != user.ID {
@@ -79,7 +92,7 @@ func (s *AuthenticationCheckTestSuite) Test_AuthenticationCheck_Good() {
 	req, _ := http.NewRequest(http.MethodGet, "/", nil)
 	cookie := &http.Cookie{
 		Name:   "todanni-access-token",
-		Value:  token,
+		Value:  signedToken,
 		MaxAge: 300,
 	}
 	req.AddCookie(cookie)

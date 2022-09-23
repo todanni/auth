@@ -59,9 +59,8 @@ const (
 	passwd = "test"
 )
 
-// Creates a temporary Postgres docker container to run tests against.
-//
-// Returns connected gorm DB and function to cleanup container after testing is complete.
+// SetupGormWithDocker creates a temporary Postgres docker container to run tests against.
+// Returns connected gorm DB and function to clean up container after testing is complete.
 func SetupGormWithDocker() (*gorm.DB, func()) {
 	pool, err := dockertest.NewPool("")
 	chk(err)

@@ -111,7 +111,7 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	todanniToken := token.New()
+	todanniToken := token.NewAccessToken()
 	todanniToken.SetUserInfo(userInfo).
 		SetProjectsPermissions(projects).
 		SetDashboardPermissions(dashboards)
@@ -130,11 +130,11 @@ func (s *authService) CallbackHandler(w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 		HttpOnly: true,
 	})
-	refreshToken, err := token.IssueToDanniRefreshToken(int(userRecord.ID))
-	// TODO: Save the token in the DB
+
+	// TODO: Generate and persist a refresh token
 	http.SetCookie(w, &http.Cookie{
 		Name:     token.RefreshTokenCookieName,
-		Value:    refreshToken.Value,
+		Value:    "madeup-token-todo",
 		Path:     "/",
 		HttpOnly: true,
 	})
@@ -156,14 +156,27 @@ func (s *authService) RefreshTokenHandler(w http.ResponseWriter, r *http.Request
 		log.Error("couldn't look up user dashboards")
 	}
 
-	accessToken, err := token.IssueToDanniToken(user, s.config.PrivateJWK, dashboards, projects)
+	userInfo := models.UserInfo{
+		Email:      user.Email,
+		ProfilePic: user.ProfilePic,
+		UserID:     user.ID,
+	}
+
+	todanniToken := token.NewAccessToken()
+	todanniToken.SetUserInfo(userInfo).
+		SetProjectsPermissions(projects).
+		SetDashboardPermissions(dashboards)
+
+	signedToken, err := todanniToken.SignedToken(s.config.PrivateJWK)
 	if err != nil {
-		http.Error(w, "couldn't issue refresh token", http.StatusInternalServerError)
+		log.Errorf("Couldn't sign todanni token: %v", err)
+		http.Error(w, "couldn't create the ToDanni token", http.StatusInternalServerError)
+		return
 	}
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     token.AccessTokenCookieName,
-		Value:    accessToken,
+		Value:    signedToken,
 		Secure:   true,
 		HttpOnly: true,
 		SameSite: 2,

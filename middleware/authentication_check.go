@@ -26,7 +26,7 @@ func (ea *AuthenticationCheck) ServeHTTP(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	accessToken := token.New()
+	accessToken := token.NewAccessToken()
 	err = accessToken.Validate(accessTokenCookie.Value)
 
 	switch err {
