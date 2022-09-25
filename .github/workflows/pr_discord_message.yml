@@ -16,4 +16,4 @@ jobs:
           webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
           color: "#48f442"
           username: "PR notification"
-          message: "New PR: ${{ github.event.pull_request.title }} \n ${{ github.event.pull_request.pull_request.html_url }}"
+          message: "${{ github.event.pull_request.html_url }}"
