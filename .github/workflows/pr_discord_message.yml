@@ -1,0 +1,17 @@
+name: Build and deploy the Auth service to production
+
+on:
+  pull_request
+
+jobs:
+  build:
+    runs-on: self-hosted
+    steps:
+      -
+        name: Send Discord PR message
+        uses: appleboy/discord-action@master
+        with:
+          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
+          webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
+          color: "#FF0000"
+          message: "New PR opened by someone"
