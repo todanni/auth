@@ -7,17 +7,18 @@ import (
 )
 
 const (
+	ApiPath                       = "/api/dashboards"
 	ListAndCreateDashboardHandler = "/api/dashboards/"
-	GetAndDeleteDashboardHandler  = "/api/dashboards/{id}"
-	AcceptDashboardHandler        = "/api/dashboards/{id}/accept"
-	RejectDashboardHandler        = "/api/dashboards/{id}/reject"
 )
 
 func (s *dashboardService) routes() {
-	s.router.Handle(ListAndCreateDashboardHandler, token.NewAuthenticationMiddleware(s.CreateDashboardHandler)).Methods(http.MethodPost)
-	s.router.Handle(ListAndCreateDashboardHandler, token.NewAuthenticationMiddleware(s.ListDashboardsHandler)).Methods(http.MethodGet)
-	s.router.Handle(GetAndDeleteDashboardHandler, token.NewAuthenticationMiddleware(s.DeleteDashboardHandler)).Methods(http.MethodDelete)
-	s.router.Handle(GetAndDeleteDashboardHandler, token.NewAuthenticationMiddleware(s.GetDashboardHandler)).Methods(http.MethodGet)
-	s.router.Handle(AcceptDashboardHandler, token.NewAuthenticationMiddleware(s.AcceptDashboardInviteHandler)).Methods(http.MethodPut)
-	s.router.Handle(RejectDashboardHandler, token.NewAuthenticationMiddleware(s.RejectDashboardInviteHandler)).Methods(http.MethodPut)
+	r := s.router.PathPrefix(ApiPath).Subrouter()
+	r.Use(token.AuthMiddleware)
+
+	r.HandleFunc("/", s.CreateDashboardHandler).Methods(http.MethodPost)
+	r.HandleFunc("/", s.ListDashboardsHandler).Methods(http.MethodGet)
+	r.HandleFunc("/{id}", s.DeleteDashboardHandler).Methods(http.MethodDelete)
+	r.HandleFunc("/{id}", s.GetDashboardHandler).Methods(http.MethodGet)
+	r.HandleFunc("/{id}/accept", s.AcceptDashboardInviteHandler).Methods(http.MethodPut)
+	r.HandleFunc("/{id}/reject", s.RejectDashboardInviteHandler).Methods(http.MethodPut)
 }
