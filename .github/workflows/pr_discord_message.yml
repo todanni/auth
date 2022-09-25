@@ -1,7 +1,8 @@
 name: Build and deploy the Auth service to production
 
 on:
-  pull_request
+  pull_request:
+    types: [opened, reopened]
 
 jobs:
   build:
