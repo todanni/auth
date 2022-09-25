@@ -27,7 +27,9 @@ func NewDashboardService(dashboardStorage storage.DashboardStorage, userStorage 
 		userStorage:      userStorage,
 		router:           router,
 	}
-	server.routes()
+	if router != nil {
+		server.routes()
+	}
 	return server
 }
 
@@ -38,7 +40,11 @@ type dashboardService struct {
 }
 
 func (s *dashboardService) ListDashboardsHandler(w http.ResponseWriter, r *http.Request) {
-	userInfo := r.Context().Value(token.UserInfoContextKey).(models.UserInfo)
+	accessToken := r.Context().Value(token.AccessTokenContextKey).(*token.ToDanniToken)
+	userInfo, err := accessToken.GetUserInfo()
+	if err != nil {
+		http.Error(w, "token didn't contain user info", http.StatusBadRequest)
+	}
 
 	dashboards, err := s.dashboardStorage.List(userInfo.UserID)
 	if err != nil {
@@ -76,11 +82,15 @@ func (s *dashboardService) ListDashboardsHandler(w http.ResponseWriter, r *http.
 }
 
 func (s *dashboardService) CreateDashboardHandler(w http.ResponseWriter, r *http.Request) {
-	userInfo := r.Context().Value(token.UserInfoContextKey).(models.UserInfo)
+	accessToken := r.Context().Value(token.AccessTokenContextKey).(*token.ToDanniToken)
+	userInfo, err := accessToken.GetUserInfo()
+	if err != nil {
+		http.Error(w, "token didn't contain user info", http.StatusBadRequest)
+	}
 
 	// Parse the body of the request to get the email of the invited user
 	var requestBody models.DashboardCreateRequest
-	err := json.NewDecoder(r.Body).Decode(&requestBody)
+	err = json.NewDecoder(r.Body).Decode(&requestBody)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

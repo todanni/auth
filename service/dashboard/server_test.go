@@ -41,10 +41,10 @@ func Test_dashboardService_ListDashboardsHandler(t *testing.T) {
 
 	userStorageMock := mocks.NewUserStorage(t)
 
-	s := NewDashboardService(dashboardStorageMock, userStorageMock, r)
+	s := NewDashboardService(dashboardStorageMock, userStorageMock, nil)
 
 	w := httptest.NewRecorder()
-	r.Handle(ListAndCreateDashboardHandler, token.NewAuthenticationMiddleware(s.ListDashboardsHandler)).Methods(http.MethodGet)
+	r.HandleFunc(ListAndCreateDashboardHandler, s.ListDashboardsHandler).Methods(http.MethodGet)
 
 	request := httptest.NewRequest(http.MethodGet, ListAndCreateDashboardHandler, nil)
 
@@ -53,9 +53,12 @@ func Test_dashboardService_ListDashboardsHandler(t *testing.T) {
 		UserID: 1,
 	})
 
-	ctx := context.WithValue(context.Background(), token.AccessTokenContextKey, accessToken)
-	request.WithContext(ctx)
+	ctx := request.Context()
+	ctx = context.WithValue(ctx, token.AccessTokenContextKey, accessToken)
+	request = request.WithContext(ctx)
 
 	r.ServeHTTP(w, request)
+	body := w.Body.String()
 	require.Equal(t, http.StatusOK, w.Code)
+	require.NotNil(t, body)
 }
