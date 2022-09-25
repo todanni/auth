@@ -6,28 +6,33 @@ import (
 	"github.com/todanni/auth/models"
 )
 
-type UserStorage struct {
+type userStorage struct {
 	db *gorm.DB
 }
 
+type UserStorage interface {
+	CreateUser(email, loginType, profilePic string) (models.User, error)
+	GetUser(email string) (models.User, error)
+}
+
 func NewUserStorage(db *gorm.DB) UserStorage {
-	return UserStorage{
+	return &userStorage{
 		db: db,
 	}
 }
 
-func (storage *UserStorage) CreateUser(email, loginType, profilePic string) (models.User, error) {
+func (s *userStorage) CreateUser(email, loginType, profilePic string) (models.User, error) {
 	user := models.User{
-		Email:     email,
-		LoginType: loginType,
+		Email:      email,
+		LoginType:  loginType,
 		ProfilePic: profilePic,
 	}
-	result := storage.db.Create(&user)
+	result := s.db.Create(&user)
 	return user, result.Error
 }
 
-func (storage *UserStorage) GetUser(email string) (models.User, error) {
+func (s *userStorage) GetUser(email string) (models.User, error) {
 	var result models.User
-	storage.db.Where("email = ?", email).First(&result)
+	s.db.Where("email = ?", email).First(&result)
 	return result, nil
 }
