@@ -15,4 +15,4 @@ jobs:
           webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
           username: "PR notification"
-          message: "PR \n ${{ github.event.pull_request.html_url }}"
+          message: "${{ github.event.pull_request.html_url }}"
