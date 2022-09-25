@@ -30,14 +30,14 @@ type AuthService interface {
 type authService struct {
 	router           *mux.Router
 	server           *osin.Server
-	userStorage      *storage.UserStorage
+	userStorage      storage.UserStorage
 	dashboardStorage storage.DashboardStorage
 	projectStorage   storage.ProjectStorage
 	config           config.Config
 	oauthConfig      *oauth2.Config
 }
 
-func NewAuthService(router *mux.Router, conf config.Config, userStorage *storage.UserStorage, dashboardStorage storage.DashboardStorage, projectStorage storage.ProjectStorage, oauthConfig *oauth2.Config) AuthService {
+func NewAuthService(router *mux.Router, conf config.Config, userStorage storage.UserStorage, dashboardStorage storage.DashboardStorage, projectStorage storage.ProjectStorage, oauthConfig *oauth2.Config) AuthService {
 	server := &authService{
 		oauthConfig:      oauthConfig,
 		config:           conf,
