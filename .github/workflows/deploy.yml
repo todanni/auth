@@ -54,7 +54,7 @@ jobs:
         with:
           webhook_url: "https://discord.com/api/webhooks/${{ secrets.DISCORD_WEBHOOK_ID }}/${{ secrets.DISCORD_WEBHOOK_TOKEN }}"
           colour: "#FF0000"
-          title: ":tools: Failed to build image for ${{ github.repository }}"
+          title: ":japanese_goblin: Failed to build image for ${{ github.repository }}"
           message: "${{ github.event.commits[0].message }}"
           title_url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id}}"
           avatar_url: "https://github.com/todanni/auth/blob/main/images/account-lock-outline.png?raw=true"
@@ -116,7 +116,7 @@ jobs:
         with:
           webhook_url: "https://discord.com/api/webhooks/${{ secrets.DISCORD_WEBHOOK_ID }}/${{ secrets.DISCORD_WEBHOOK_TOKEN }}"
           colour: "#FF0000"
-          title: ":rocket: Failed to deploy latest image for ${{ github.repository }}"
+          title: ":boom: Failed to deploy latest image for ${{ github.repository }}"
           message: "${{ github.event.commits[0].message }}"
           title_url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id}}"
           avatar_url: "https://github.com/todanni/auth/blob/main/images/account-lock-outline.png?raw=true"
