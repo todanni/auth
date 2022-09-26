@@ -50,23 +50,25 @@ jobs:
       -
         name: Send discord failure message
         if: ${{ failure() }}
-        uses: appleboy/discord-action@master
+        uses: stegzilla/discord-notify@v4
         with:
-          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
-          webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
-          color: "#FF0000"
-          message: "Failed to build docker image for ${{ github.repository }} \n https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id}} \n ${{ github.event.commits[0].message }}"
+          webhook_url: "https://discord.com/api/webhooks/${{ secrets.DISCORD_WEBHOOK_ID }}/${{ secrets.DISCORD_WEBHOOK_TOKEN }}"
+          colour: "#FF0000"
+          title: ":tools: Failed to build image for ${{ github.repository }}"
+          message: "${{ github.event.commits[0].message }}"
+          title_url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id}}"
           avatar_url: "https://github.com/todanni/auth/blob/main/images/account-lock-outline.png?raw=true"
 
       -
         name: Send discord success message
         if: ${{ success() }}
-        uses: appleboy/discord-action@master
+        uses: stegzilla/discord-notify@v4
         with:
-          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
-          webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
-          color: "#48f442"
-          message: "Image built successfully for ${{ github.repository }}. \n https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id}} \n ${{ github.event.commits[0].message }}"
+          webhook_url: "https://discord.com/api/webhooks/${{ secrets.DISCORD_WEBHOOK_ID }}/${{ secrets.DISCORD_WEBHOOK_TOKEN }}"
+          colour: "#48f442"
+          title: ":tools: Successfully built image for ${{ github.repository }}"
+          message: "${{ github.event.commits[0].message }}"
+          title_url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id}}"
           avatar_url: "https://github.com/todanni/auth/blob/main/images/account-lock-outline.png?raw=true"
 
       ## Send result to discord
@@ -110,21 +112,23 @@ jobs:
       -
         name: Send discord failure message
         if: ${{ failure() }}
-        uses: appleboy/discord-action@master
+        uses: stegzilla/discord-notify@v4
         with:
-          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
-          webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
-          color: "#FF0000"
-          message: "Failed to run latest docker image for ${{ github.repository }} \n https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id}} \n ${{ github.event.commits[0].message }}"
+          webhook_url: "https://discord.com/api/webhooks/${{ secrets.DISCORD_WEBHOOK_ID }}/${{ secrets.DISCORD_WEBHOOK_TOKEN }}"
+          colour: "#FF0000"
+          title: ":rocket: Failed to deploy latest image for ${{ github.repository }}"
+          message: "${{ github.event.commits[0].message }}"
+          title_url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id}}"
           avatar_url: "https://github.com/todanni/auth/blob/main/images/account-lock-outline.png?raw=true"
 
       -
         name: Send discord success message
         if: ${{ success() }}
-        uses: appleboy/discord-action@master
+        uses: stegzilla/discord-notify@v4
         with:
-          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
-          webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
-          color: "#48f442"
-          message: "Latest image now running in production for for ${{ github.repository }}. \n https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id}} \n ${{ github.event.commits[0].message }}"
+          webhook_url: "https://discord.com/api/webhooks/${{ secrets.DISCORD_WEBHOOK_ID }}/${{ secrets.DISCORD_WEBHOOK_TOKEN }}"
+          colour: "#48f442"
+          title: ":rocket: Successfully deployed latest image to production for ${{ github.repository }}"
+          message: "${{ github.event.commits[0].message }}"
+          title_url: "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id}}"
           avatar_url: "https://github.com/todanni/auth/blob/main/images/account-lock-outline.png?raw=true"
