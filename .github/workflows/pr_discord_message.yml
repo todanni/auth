@@ -10,7 +10,7 @@ jobs:
     steps:
       -
         name: Send Discord PR message
-        uses: stegzilla/discord-notify@v2
+        uses: stegzilla/discord-notify@v3
         with:
           webhook_url: "https://discord.com/api/webhooks/${{ secrets.DISCORD_WEBHOOK_ID }}/${{ secrets.DISCORD_WEBHOOK_TOKEN }}"
           color: "#48f442"
