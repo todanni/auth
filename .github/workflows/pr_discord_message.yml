@@ -16,5 +16,5 @@ jobs:
           color: "#48f442"
           username: "PR notification"
           title: "New PR opened"
-          message: "${{ github.event.pull_request.title }}\nCreator: ${{ github.event.pull_request.user.login }}\n[${{ github.event.pull_request.title }}](${{ github.event.pull_request.html_url }})"
+          message: "GitHub\n[ ${{ github.repository }} - ${{ github.event.pull_request.title }}](${{ github.event.pull_request.html_url }})"
           include_image: true
