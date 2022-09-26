@@ -10,10 +10,12 @@ jobs:
     steps:
       -
         name: Send Discord PR message
-        uses: appleboy/discord-action@master
+        uses: stegzilla/discord-notify@v4
         with:
-          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
-          webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
+          webhook_url: "https://discord.com/api/webhooks/${{ secrets.DISCORD_WEBHOOK_ID }}/${{ secrets.DISCORD_WEBHOOK_TOKEN }}"
           color: "#48f442"
           username: "PR notification"
-          message: "PR opened: ${{ github.event.pull_request.title }}\n${{ github.event.pull_request.html_url }}\nCreator: ${{ github.event.pull_request.user.login }}"
+          title: "${{ github.repository }} - ${{ github.event.pull_request.title }}"
+          title_url: "${{ github.event.pull_request.html_url }}"
+          message: "GitHub"
+          include_image: true
