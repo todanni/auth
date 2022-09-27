@@ -2,6 +2,7 @@ package main
 
 import (
 	b64 "encoding/base64"
+	"fmt"
 	"net/http"
 	"os"
 
@@ -81,5 +82,5 @@ func main() {
 	project.NewProjectService(r, projectStorage)
 
 	// Start the servers and listen
-	log.Fatal(http.ListenAndServe(":8083", r))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", cfg.Port), r))
 }
