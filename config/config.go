@@ -19,6 +19,7 @@ type Config struct {
 	DBPassword   string `env:"POSTGRES_PASSWORD,required"`
 	DBName       string `env:"POSTGRES_NAME,required"`
 	PrivateKeyID string `env:"PRIVATE_KEY_ID,required"`
+	Port         int    `env:"PORT" envDefault:"8083"`
 
 	vault      *vault.Client
 	PrivateJWK jwk.Key
