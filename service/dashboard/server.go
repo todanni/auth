@@ -3,6 +3,7 @@ package dashboard
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
@@ -122,8 +123,56 @@ func (s *dashboardService) CreateDashboardHandler(w http.ResponseWriter, r *http
 }
 
 func (s *dashboardService) DeleteDashboardHandler(w http.ResponseWriter, r *http.Request) {
-	//TODO implement me
-	panic("implement me")
+	params := mux.Vars(r)
+	dashboardID := params["id"]
+
+	accessToken := r.Context().Value(token.AccessTokenContextKey).(*token.ToDanniToken)
+	userInfo, err := accessToken.GetUserInfo()
+	if err != nil {
+		http.Error(w, "token didn't contain user info", http.StatusBadRequest)
+	}
+
+	dashboard, err := s.dashboardStorage.GetById(dashboardID)
+	if err != nil {
+		http.Error(w, "couldn't find dashboard", http.StatusNotFound)
+	}
+
+	if dashboard.Owner != (userInfo.UserID) {
+		http.Error(w, "only owners can delete dashboards", http.StatusForbidden)
+	}
+
+	err = s.dashboardStorage.Delete(dashboardID)
+	if err != nil {
+		http.Error(w, "couldn't delete dashboard from database", http.StatusInternalServerError)
+	}
+}
+
+func (s *dashboardService) GetDashboardHandler(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	dashboardID := params["id"]
+
+	accessToken := r.Context().Value(token.AccessTokenContextKey).(*token.ToDanniToken)
+	dashIdUint, err := strconv.ParseUint(dashboardID, 10, 32)
+	if err != nil {
+		http.Error(w, "invalid dashboard ID", http.StatusBadRequest)
+	}
+
+	if !accessToken.HasDashboardPermission(uint(dashIdUint)) {
+		http.Error(w, "unauthorised", http.StatusUnauthorized)
+	}
+
+	dashboard, err := s.dashboardStorage.GetById(dashboardID)
+	if err != nil {
+		http.Error(w, "couldn't find dashboard", http.StatusNotFound)
+	}
+
+	responseBody, err := json.Marshal(dashboard)
+	if err != nil {
+		http.Error(w, "couldn't marshal body", http.StatusInternalServerError)
+	}
+
+	w.Header().Add("Content-Type", "application/json")
+	w.Write(responseBody)
 }
 
 func (s *dashboardService) AcceptDashboardInviteHandler(w http.ResponseWriter, r *http.Request) {
@@ -132,11 +181,6 @@ func (s *dashboardService) AcceptDashboardInviteHandler(w http.ResponseWriter, r
 }
 
 func (s *dashboardService) RejectDashboardInviteHandler(w http.ResponseWriter, r *http.Request) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (s *dashboardService) GetDashboardHandler(w http.ResponseWriter, r *http.Request) {
 	//TODO implement me
 	panic("implement me")
 }
